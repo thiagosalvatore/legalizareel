@@ -30,6 +30,11 @@ Read [README.md](README.md) first for setup and the build commands.
 - Iterate on one scene with `npx hyperframes@0.8.85 preview` or `snapshot --at <t>` in the scenes folder, after one render has written `index.html`.
 - `npx hyperframes@0.8.85 lint` must report 0 errors.
 
+**Sound effects follow the picture.**
+- Every `sfx` sits on a visible event. Use `Beat(fraction, delay)` for the scene's GSAP beats and `app_clips.scene_time(...)` for app-clip events, measured from the clip.
+- After a render, check the sounds against frames taken at each sfx time.
+- README → Sound effects has the details.
+
 **Soundtrack:**
 - A story passes `voiceover={...}` when `ELEVENLABS_API_KEY` is set. Write that narration as one continuous read.
 - The local voices strip v3 tags like `[excited]`, so one narration serves both cuts.

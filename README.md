@@ -178,7 +178,20 @@ Load the `suno-song` skill for the whole workflow (lyrics, styles, generation, s
 
 ## Sound effects
 
-A scene's `sfx=[(name, offset)]` plays a sound at `offset` seconds into the scene. A negative offset counts back from the scene's end.
+A scene's `sfx=[(name, offset)]` plays a sound at `offset` into the scene. Every sound goes on something that happens on screen: a click, a dialog, a number landing. Never place a sound at a time that only sounds nice. There are three kinds of offset:
+
+- **Seconds** from the scene's start, for fixed-time entrances. Example: `("whoosh", 0.2)` when a `.screen` starts to rise.
+- **`Beat(fraction, delay)`**, for anything the scene's GSAP timeline places at a fraction of `dur`. Examples: `Beat(0.2, 1.6)` when a counter that starts at `0.2 * dur` and runs for 1.6 s lands; `Beat(0.55, 0.1)` when an element that enters at `0.55 * dur` shows up. Use the same fractions as the scene's script.
+- **Negative seconds** from the scene's end, for a sting that closes the scene.
+
+For app footage, write the event in **clip time**: `app_clips.scene_time(SCENES, "<scene id>", <seconds in the clip>)` subtracts the scene's `data-media-start`, so trimming a clip moves its sounds with it. To find the event times in a clip, use the moments where the UI visibly changes:
+
+```bash
+ffmpeg -i assets/app/02-esocial-envio.mp4 -vf "scale=270:-1,select='gt(scene,0.012)',showinfo" -f null - 2>&1 | grep -o "pts_time:[0-9.]*"
+```
+
+A click shows up as the change it causes, such as a dialog opening or a loading state. Re-measure after re-recording a clip, because each recording's timing moves a little.
+
 
 - The generated sounds are in `engine.gen_sfx()`: `ding`, `tick`, `boom`, `airhorn`, `success`, `riser`, `drumroll` and more.
 - To reuse a real sound, cut it with `sb.sound("name", "path/to/file.m4a", start, end, fade_in=..., fade_out=...)`. Then use `"name"` in `sfx` like any other sound.

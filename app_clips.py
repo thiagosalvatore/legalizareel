@@ -4,6 +4,7 @@
 Usage: python app_clips.py [clip ...]   (no argument: every recorded clip)
 """
 import os
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -16,6 +17,7 @@ RECORDER = FRONTEND / "mock-backend" / "recording"
 RECORDINGS = RECORDER / "output"
 CLIP_WIDTH = 1080
 KEYFRAME_EVERY = 15
+MEDIA_START = re.compile(r'data-media-start="([\d.]+)"')
 
 RECORD_HELP = f"""Record it with the mock backend running:
   cd {FRONTEND}
@@ -48,6 +50,12 @@ def ensure(names: list[str]) -> None:
         if _is_stale(source, target):
             print(f"syncing {name}")
             _transcode(source, target)
+
+
+def scene_time(scenes: Path, scene_id: str, clip_seconds: float) -> float:
+    """Seconds into a scene when its app clip reaches clip_seconds, given the clip's data-media-start."""
+    html = (scenes / "compositions" / f"{scene_id}.html").read_text(encoding="utf-8")
+    return clip_seconds - float(MEDIA_START.search(html).group(1))
 
 
 def main() -> None:
