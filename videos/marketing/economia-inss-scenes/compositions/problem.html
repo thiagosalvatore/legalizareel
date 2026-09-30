@@ -1,5 +1,5 @@
 <!doctype html>
-<html data-composition-variables='[{"id":"dur","type":"number","label":"Scene length (s)","default":5},{"id":"zoom","type":"number","label":"Camera push (1 = none)","default":1}]'>
+<html data-composition-variables='[{"id":"dur","type":"number","label":"Scene length (s)","default":5},{"id":"zoom","type":"number","label":"Camera push (1 = none)","default":1},{"id":"countAt","type":"number","label":"Counter starts (fraction)","default":0.2}]'>
   <body>
     <template id="problem-template">
       <style>
@@ -19,13 +19,13 @@
       </div>
       <script>
         (() => {
-          const { dur, zoom } = window.__hyperframes.getVariables();
+          const { dur, zoom, countAt } = window.__hyperframes.getVariables();
           const tl = gsap.timeline({ paused: true });
           const B = window.brand;
           B.fadeIn(tl, "#problem-logo");
           B.upIn(tl, ["#problem-badge", "#problem-sub"], 0.1, 0.14);
-          B.popIn(tl, "#problem-money", 0.2 * dur);
-          B.counter(tl, "#problem-money", 81141, 0.2 * dur, 1.6);
+          B.popIn(tl, "#problem-money", countAt * dur);
+          B.counter(tl, "#problem-money", 81141, countAt * dur, 1.6);
           B.upIn(tl, "#problem-line", 0.55 * dur);
           B.camera(tl, "problem", zoom, dur);
           window.__timelines["problem"] = tl;

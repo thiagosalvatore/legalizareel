@@ -1,5 +1,5 @@
 <!doctype html>
-<html data-composition-variables='[{"id":"dur","type":"number","label":"Scene length (s)","default":5.5},{"id":"zoom","type":"number","label":"Camera push (1 = none)","default":1}]'>
+<html data-composition-variables='[{"id":"dur","type":"number","label":"Scene length (s)","default":5.5},{"id":"zoom","type":"number","label":"Camera push (1 = none)","default":1},{"id":"dropAt","type":"number","label":"47 mil counter starts (fraction)","default":0.25},{"id":"savedAt","type":"number","label":"Savings counter starts (fraction)","default":0.5}]'>
   <body>
     <template id="economia-template">
       <style>
@@ -32,14 +32,14 @@
       </div>
       <script>
         (() => {
-          const { dur, zoom } = window.__hyperframes.getVariables();
+          const { dur, zoom, dropAt, savedAt } = window.__hyperframes.getVariables();
           const tl = gsap.timeline({ paused: true });
           const B = window.brand;
           B.fadeIn(tl, "#economia-logo");
           B.upIn(tl, ["#economia-before", "#economia-after"], 0.1, 0.2);
-          B.counter(tl, "#economia-after-value", 47251, 0.25 * dur, 1.1, 81141);
-          B.popIn(tl, ["#economia-saved", "#economia-label"], 0.5 * dur, 0.12);
-          B.counter(tl, "#economia-saved", 33890, 0.5 * dur, 1.2);
+          B.counter(tl, "#economia-after-value", 47251, dropAt * dur, 1.1, 81141);
+          B.popIn(tl, ["#economia-saved", "#economia-label"], savedAt * dur, 0.12);
+          B.counter(tl, "#economia-saved", 33890, savedAt * dur, 1.2);
           B.camera(tl, "economia", zoom, dur);
           window.__timelines["economia"] = tl;
         })();

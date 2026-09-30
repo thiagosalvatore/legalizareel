@@ -40,6 +40,8 @@ Read [README.md](README.md) first for setup and the build commands.
 **Soundtrack:**
 - A story passes `voiceover={...}` when `ELEVENLABS_API_KEY` is set. Write that narration as one continuous read.
 - The local voices strip v3 tags like `[excited]`, so one narration serves both cuts.
+- The ElevenLabs key is `op read --account my.1password.com "op://Private/ElevenLabs/credential"` (Creator plan). **Never use the `Elevenlabs` item in the PostHog 1Password (vault General).** That is PostHog's shared account, not this project's.
+- After a new take, retime the scene `vars` to the words (README → Voiceover), because the picture should lead the voice by 0.1–0.5 s.
 - For a sung cut, load the `suno-song` skill.
 
 ## Render-on-demand, never CI

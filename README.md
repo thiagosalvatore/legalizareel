@@ -13,11 +13,12 @@ Videos so far: [`marketing/economia-inss`](videos/marketing/economia-inss.py), a
 After [setup](#setup):
 
 ```bash
-python build.py marketing/economia-inss
+ELEVENLABS_API_KEY=$(op read --account my.1password.com "op://Private/ElevenLabs/credential") \
+  python build.py marketing/economia-inss
 open economia-inss.mp4
 ```
 
-With `ELEVENLABS_API_KEY` set, the narration is an ElevenLabs voiceover. Without it, a free local voice reads it.
+With `ELEVENLABS_API_KEY` set, the narration is an ElevenLabs voiceover. Without it, a free local voice reads it. The key is in the personal 1Password account (vault Private, item ElevenLabs).
 
 ## How a video is made
 
@@ -155,7 +156,9 @@ A storyboard passes `build(..., voiceover={"voice": <id>, "model": "eleven_v3", 
 - The whole narration goes to ElevenLabs as **one take**, so it flows through the reel instead of restarting every scene. The per-character timestamps cut it back into a chunk per scene.
 - Pauses longer than 0.3 s are shortened to 0.3 s (`VO_MAX_PAUSE`).
 - A scene shorter than its `min_dur` holds on silence.
-- `eleven_v3` speaks Brazilian Portuguese with any premade voice. `economia-inss` uses Brian (`nPczCjzI2devNBz1zQrb`). Try one or two lines in a few voices and pick the one that sounds most natural in pt-BR.
+- `eleven_v3` speaks Brazilian Portuguese with any premade voice. `economia-inss` uses Brian (`nPczCjzI2devNBz1zQrb`), picked over the account's Brazilian library voices (Gabriel, Will, Eric) in an audition.
+- To audition, render one line per voice with the text-to-speech endpoint (about 40–90 characters each). Never audition with a whole take.
+- A new take changes where each word lands. Afterwards, move the scene beats (the `vars` of the scene) onto the words they illustrate. The take's alignment JSON in `audio/voiceover/` gives the start time of every character. Put the picture 0.1–0.5 s ahead of the word.
 
 Write the narration as one read:
 

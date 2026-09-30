@@ -1,5 +1,5 @@
 <!doctype html>
-<html data-composition-variables='[{"id":"dur","type":"number","label":"Scene length (s)","default":5},{"id":"zoom","type":"number","label":"Camera push (1 = none)","default":1}]'>
+<html data-composition-variables='[{"id":"dur","type":"number","label":"Scene length (s)","default":5},{"id":"zoom","type":"number","label":"Camera push (1 = none)","default":1},{"id":"zoomAt","type":"number","label":"Zoom onto the dialog (s)","default":0.8}]'>
   <body>
     <template id="esocial-template">
       <style>
@@ -14,20 +14,20 @@
             <div class="big s80">eSocial em <span class="hl">um clique</span></div>
           </div>
           <div class="screen" id="esocial-screen">
-            <video id="esocial-video" class="clip" src="assets/app/02-esocial-envio.mp4" data-start="0" data-media-start="6.2" muted playsinline></video>
+            <video id="esocial-video" class="clip" src="assets/app/02-esocial-envio.mp4" data-start="0" data-media-start="4.6" muted playsinline></video>
           </div>
         </div>
       </div>
       <script>
         (() => {
-          const { dur, zoom } = window.__hyperframes.getVariables();
+          const { dur, zoom, zoomAt } = window.__hyperframes.getVariables();
           const tl = gsap.timeline({ paused: true });
           const B = window.brand;
           B.fadeIn(tl, "#esocial-logo");
           B.upIn(tl, "#esocial-head", 0.1);
           B.floatIn(tl, "#esocial-screen", 0.2);
           tl.set("#esocial-video", { scale: 1.06, x: -70, y: 0 }, 0);
-          tl.to("#esocial-video", { scale: 1.8, x: -394, y: -925, duration: 0.8, ease: "power2.inOut" }, 0.8);
+          tl.to("#esocial-video", { scale: 1.8, x: -394, y: -925, duration: 0.8, ease: "power2.inOut" }, zoomAt);
           B.camera(tl, "esocial", zoom, dur);
           window.__timelines["esocial"] = tl;
         })();

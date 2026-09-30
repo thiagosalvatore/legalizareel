@@ -20,7 +20,10 @@ APP_CLIPS = ["02-esocial-envio", "03-darf", "07-simulacao"]
 SIMULACAO_CLICK, SIMULACAO_RESULT = 6.78, 7.73
 ESOCIAL_CLICK, ESOCIAL_CONFIRM, ESOCIAL_DONE = 6.75, 9.72, 11.53
 DARF_CONFIRM, DARF_DONE = 9.92, 11.8
-PILE = {"cards": 23, "fallFrom": 0.06, "fallSpan": 0.46, "errorsAt": (0.72, 0.77, 0.82, 0.87), "collapseAt": 0.93}
+PILE = {"cards": 23, "fallFrom": 0.06, "fallSpan": 0.5, "errorsAt": (0.76, 0.8, 0.85, 0.89), "collapseAt": 0.93}
+PROBLEM = {"countAt": 0.31}
+ECONOMIA = {"dropAt": 0.31, "savedAt": 0.62}
+ESOCIAL = {"zoomAt": 2.1}
 CARD_LANDS_AFTER = 0.18
 VOICEOVER = {"voice": "nPczCjzI2devNBz1zQrb", "model": "eleven_v3", "settings": {"stability": 0.5, "speed": 1.08}}
 
@@ -44,10 +47,10 @@ scene(
     sfx=[("impact", 0.4)],
 )
 scene(
-    id="problem", min_dur=5.0,
+    id="problem", min_dur=5.0, vars=PROBLEM,
     narration="Sem planejamento, o INSS sai pela área construída: "
               "81 mil reais, numa casa de 240 metros.",
-    sfx=[("drumroll", Beat(0.2)), ("impact", Beat(0.2, 1.6)), ("swoosh", -0.3)],
+    sfx=[("drumroll", Beat(PROBLEM["countAt"])), ("impact", Beat(PROBLEM["countAt"], 1.6)), ("swoosh", -0.3)],
 )
 flash(TEAL, 0.066)
 scene(
@@ -61,10 +64,11 @@ scene(
     sfx=[("click", clip("simulacao", SIMULACAO_CLICK)), ("ding", clip("simulacao", SIMULACAO_RESULT))],
 )
 scene(
-    id="economia", effect="slowpunch", min_dur=5.5,
+    id="economia", effect="slowpunch", min_dur=5.5, vars=ECONOMIA,
     narration="Nessa obra, o INSS cai de 81 para 47 mil. "
               "[excited] Quase 34 mil de economia!",
-    sfx=[("fall", Beat(0.25)), ("riser", Beat(0.5, -0.3)), ("cash", Beat(0.5, 1.2)), ("swoosh", -0.3)],
+    sfx=[("fall", Beat(ECONOMIA["dropAt"])), ("riser", Beat(ECONOMIA["savedAt"], -0.3)),
+         ("cash", Beat(ECONOMIA["savedAt"], 1.2)), ("swoosh", -0.3)],
 )
 flash(WHITE, 0.066)
 scene(
@@ -78,7 +82,7 @@ scene(
 )
 flash(TEAL, 0.066)
 scene(
-    id="esocial", effect="punch", min_dur=6.0,
+    id="esocial", effect="punch", min_dur=7.2, vars=ESOCIAL,
     narration="[excited] A Legaliza Obra faz tudo isso por você. Um clique, e a obra está no eSocial.",
     sfx=[("impact", 0.0), ("click", clip("esocial", ESOCIAL_CLICK)), ("click", clip("esocial", ESOCIAL_CONFIRM)),
          ("success", clip("esocial", ESOCIAL_DONE))],
