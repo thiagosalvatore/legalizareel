@@ -1,0 +1,33 @@
+<!doctype html>
+<html data-composition-variables='[{"id":"dur","type":"number","label":"Scene length (s)","default":3},{"id":"zoom","type":"number","label":"Camera push (1 = none)","default":1}]'>
+  <body>
+    <template id="hook-template">
+      <style>
+        #hook-root { position: absolute; inset: 0; }
+
+      </style>
+      <div id="hook-root" data-composition-id="hook" data-width="1080" data-height="1920">
+        <div class="stage deep">
+          <img class="photo" id="hook-photo" src="assets/brand/obra-em-construcao.webp" alt="" />
+          <div class="shade"></div>
+          <div class="logo-pill" id="hook-logo"><img src="assets/brand/logo.png" alt="Legaliza Obra" /></div>
+          <div class="center" id="hook-text">
+            <div class="big s128" id="hook-q">Quanto de INSS a sua obra vai <span class="hl">pagar?</span></div>
+          </div>
+        </div>
+      </div>
+      <script>
+        (() => {
+          const { dur, zoom } = window.__hyperframes.getVariables();
+          const tl = gsap.timeline({ paused: true });
+          const B = window.brand;
+          tl.fromTo("#hook-photo", { scale: 1.12 }, { scale: 1, duration: dur, ease: "none" }, 0);
+          B.fadeIn(tl, "#hook-logo");
+          B.upIn(tl, "#hook-q", 0.15);
+          B.camera(tl, "hook", zoom, dur);
+          window.__timelines["hook"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

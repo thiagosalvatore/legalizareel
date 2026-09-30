@@ -1,0 +1,37 @@
+<!doctype html>
+<html data-composition-variables='[{"id":"dur","type":"number","label":"Scene length (s)","default":5},{"id":"zoom","type":"number","label":"Camera push (1 = none)","default":1}]'>
+  <body>
+    <template id="darf-template">
+      <style>
+        #darf-root { position: absolute; inset: 0; }
+        #darf-head { position: absolute; top: 250px; left: 0; right: 0; z-index: 40; }
+        #darf-screen { top: 520px; }
+      </style>
+      <div id="darf-root" data-composition-id="darf" data-width="1080" data-height="1920">
+        <div class="stage light">
+          <img class="logo" id="darf-logo" src="assets/brand/logo.png" alt="Legaliza Obra" />
+          <div class="center" id="darf-head">
+            <div class="big s80">Guia DARF <span class="hl">todo mês</span></div>
+          </div>
+          <div class="screen" id="darf-screen">
+            <video id="darf-video" class="clip" src="assets/app/03-darf.mp4" data-start="0" data-media-start="8.4" muted playsinline></video>
+          </div>
+        </div>
+      </div>
+      <script>
+        (() => {
+          const { dur, zoom } = window.__hyperframes.getVariables();
+          const tl = gsap.timeline({ paused: true });
+          const B = window.brand;
+          B.fadeIn(tl, "#darf-logo");
+          B.upIn(tl, "#darf-head", 0.1);
+          B.floatIn(tl, "#darf-screen", 0.2);
+          tl.set("#darf-video", { scale: 1.06, x: -70, y: 0 }, 0);
+          tl.to("#darf-video", { scale: 1.8, x: -394, y: -925, duration: 0.8, ease: "power2.inOut" }, 1.3);
+          B.camera(tl, "darf", zoom, dur);
+          window.__timelines["darf"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

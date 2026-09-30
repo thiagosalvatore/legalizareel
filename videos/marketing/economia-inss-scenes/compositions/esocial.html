@@ -1,0 +1,37 @@
+<!doctype html>
+<html data-composition-variables='[{"id":"dur","type":"number","label":"Scene length (s)","default":5},{"id":"zoom","type":"number","label":"Camera push (1 = none)","default":1}]'>
+  <body>
+    <template id="esocial-template">
+      <style>
+        #esocial-root { position: absolute; inset: 0; }
+        #esocial-head { position: absolute; top: 250px; left: 0; right: 0; z-index: 40; }
+        #esocial-screen { top: 520px; }
+      </style>
+      <div id="esocial-root" data-composition-id="esocial" data-width="1080" data-height="1920">
+        <div class="stage surface">
+          <img class="logo" id="esocial-logo" src="assets/brand/logo.png" alt="Legaliza Obra" />
+          <div class="center" id="esocial-head">
+            <div class="big s80">eSocial em <span class="hl">um clique</span></div>
+          </div>
+          <div class="screen" id="esocial-screen">
+            <video id="esocial-video" class="clip" src="assets/app/02-esocial-envio.mp4" data-start="0" data-media-start="6.2" muted playsinline></video>
+          </div>
+        </div>
+      </div>
+      <script>
+        (() => {
+          const { dur, zoom } = window.__hyperframes.getVariables();
+          const tl = gsap.timeline({ paused: true });
+          const B = window.brand;
+          B.fadeIn(tl, "#esocial-logo");
+          B.upIn(tl, "#esocial-head", 0.1);
+          B.floatIn(tl, "#esocial-screen", 0.2);
+          tl.set("#esocial-video", { scale: 1.06, x: -70, y: 0 }, 0);
+          tl.to("#esocial-video", { scale: 1.8, x: -394, y: -925, duration: 0.8, ease: "power2.inOut" }, 0.8);
+          B.camera(tl, "esocial", zoom, dur);
+          window.__timelines["esocial"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

@@ -1,0 +1,49 @@
+<!doctype html>
+<html data-composition-variables='[{"id":"dur","type":"number","label":"Scene length (s)","default":5.5},{"id":"zoom","type":"number","label":"Camera push (1 = none)","default":1}]'>
+  <body>
+    <template id="economia-template">
+      <style>
+        #economia-root { position: absolute; inset: 0; }
+        #economia-cards { display: flex; flex-direction: column; gap: 32px; width: 900px; text-align: left; }
+        #economia-before .value { color: #636363; text-decoration: line-through; text-decoration-thickness: 6px; }
+        #economia-total { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+        #economia-saved { font-size: 170px; color: var(--mint-2); }
+      </style>
+      <div id="economia-root" data-composition-id="economia" data-width="1080" data-height="1920">
+        <div class="stage brand">
+          <div class="logo-pill" id="economia-logo"><img src="assets/brand/logo.png" alt="Legaliza Obra" /></div>
+          <div class="center">
+            <div id="economia-cards">
+              <div class="card" id="economia-before">
+                <div class="label">INSS sem planejamento</div>
+                <div class="value">R$ 81.141</div>
+              </div>
+              <div class="card mint" id="economia-after">
+                <div class="label">INSS com a Legaliza Obra</div>
+                <div class="value" id="economia-after-value">R$ 81.141</div>
+              </div>
+            </div>
+            <div id="economia-total">
+              <div class="money" id="economia-saved">R$ 0</div>
+              <div class="sub" id="economia-label">de economia nessa obra</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <script>
+        (() => {
+          const { dur, zoom } = window.__hyperframes.getVariables();
+          const tl = gsap.timeline({ paused: true });
+          const B = window.brand;
+          B.fadeIn(tl, "#economia-logo");
+          B.upIn(tl, ["#economia-before", "#economia-after"], 0.1, 0.2);
+          B.counter(tl, "#economia-after-value", 47251, 0.25 * dur, 1.1, 81141);
+          B.popIn(tl, ["#economia-saved", "#economia-label"], 0.5 * dur, 0.12);
+          B.counter(tl, "#economia-saved", 33890, 0.5 * dur, 1.2);
+          B.camera(tl, "economia", zoom, dur);
+          window.__timelines["economia"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

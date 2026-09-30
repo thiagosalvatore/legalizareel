@@ -1,0 +1,37 @@
+<!doctype html>
+<html data-composition-variables='[{"id":"dur","type":"number","label":"Scene length (s)","default":5},{"id":"zoom","type":"number","label":"Camera push (1 = none)","default":1}]'>
+  <body>
+    <template id="obra-template">
+      <style>
+        #obra-root { position: absolute; inset: 0; }
+        #obra-head { position: absolute; top: 250px; left: 0; right: 0; z-index: 40; }
+        #obra-screen { top: 520px; }
+      </style>
+      <div id="obra-root" data-composition-id="obra" data-width="1080" data-height="1920">
+        <div class="stage light">
+          <img class="logo" id="obra-logo" src="assets/brand/logo.png" alt="Legaliza Obra" />
+          <div class="center" id="obra-head">
+            <div class="big s80">Cada obra <span class="hl">num só lugar</span></div>
+          </div>
+          <div class="screen" id="obra-screen">
+            <video id="obra-video" class="clip" src="assets/app/01-obra-andrade.mp4" data-start="0" data-media-start="3.2" muted playsinline></video>
+          </div>
+        </div>
+      </div>
+      <script>
+        (() => {
+          const { dur, zoom } = window.__hyperframes.getVariables();
+          const tl = gsap.timeline({ paused: true });
+          const B = window.brand;
+          B.fadeIn(tl, "#obra-logo");
+          B.upIn(tl, "#obra-head", 0.1);
+          B.floatIn(tl, "#obra-screen", 0.2);
+          tl.fromTo("#obra-video", { scale: 1.06, x: -70, y: 0 },
+            { scale: 1.06, x: -70, y: -40, duration: dur, ease: "none" }, 0);
+          B.camera(tl, "obra", zoom, dur);
+          window.__timelines["obra"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>
