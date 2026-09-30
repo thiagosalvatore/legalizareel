@@ -24,3 +24,11 @@ def test_sfx_lands_on_a_beat_of_the_final_scene_length():
     assert engine.sfx_offset(engine.Beat(0.5, delay=0.25), 6.0) == 3.25
     assert engine.sfx_offset(-0.5, 6.0) == 5.5
     assert engine.sfx_offset(1.2, 6.0) == 1.2
+
+
+def test_scene_vars_reach_the_composition(tmp_path):
+    scenes = [{"kind": "scene", "id": "pile", "dur": 4.0, "vars": {"collapseAt": 0.9}}]
+
+    engine.write_hf_index(scenes, tmp_path, 4.0, {}, size=engine.VERTICAL)
+
+    assert '"collapseAt": 0.9' in (tmp_path / "index.html").read_text()

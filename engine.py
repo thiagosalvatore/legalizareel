@@ -561,6 +561,24 @@ def gen_sfx():
     mk("type", "anoisesrc=color=white:duration=0.4:amplitude=0.3", "tremolo=f=30:d=0.9,highpass=f=1500,volume=0.9")
     mk("airhorn", "aevalsrc='0.33*sin(2*PI*233*t)+0.33*sin(2*PI*277*t)+0.33*sin(2*PI*330*t)':d=0.6:s=44100",
        "afade=t=out:st=0.45:d=0.15,volume=1.5,aformat=channel_layouts=stereo")
+    mk("click", "aevalsrc='0.9*(2*random(0)-1)*exp(-t*260)+0.4*sin(2*PI*2200*t)*exp(-t*300)':d=0.04:s=44100",
+       "highpass=f=900,volume=0.7,aformat=channel_layouts=stereo")
+    mk("thud", "aevalsrc='0.8*sin(2*PI*(150-70*min(t,0.16)/0.16)*t)*exp(-t*22)+0.25*(2*random(0)-1)*exp(-t*90)':d=0.18:s=44100",
+       "lowpass=f=1800,volume=0.35,aformat=channel_layouts=stereo")
+    mk("swoosh", "anoisesrc=color=pink:duration=0.5:amplitude=0.8",
+       "highpass=f=350,lowpass=f=7000,afade=t=in:d=0.26:curve=exp,afade=t=out:st=0.26:d=0.24:curve=exp,"
+       "flanger=delay=2:depth=6:speed=2,volume=8")
+    mk("impact", "aevalsrc='0.9*sin(2*PI*55*t)*exp(-t*4.5)+0.7*(2*random(0)-1)*exp(-t*38)':d=0.9:s=44100",
+       "lowpass=f=4200,volume=0.9,aformat=channel_layouts=stereo")
+    mk("crash", "aevalsrc='0.7*(2*random(0)-1)*exp(-t*4)+0.8*sin(2*PI*46*t)*exp(-t*3)':d=1.3:s=44100",
+       "lowpass=f=5200,volume=0.85,aformat=channel_layouts=stereo")
+    mk("buzz", "aevalsrc='0.22*(sgn(sin(2*PI*150*t))+sgn(sin(2*PI*157*t)))*(between(t,0,0.13)+between(t,0.19,0.34))':d=0.36:s=44100",
+       "lowpass=f=2600,afade=t=out:st=0.3:d=0.06,volume=0.55,aformat=channel_layouts=stereo")
+    mk("cash", "aevalsrc='between(t,0,0.05)*0.5*(2*random(0)-1)*exp(-t*70)"
+       "+gte(t,0.06)*(0.35*sin(2*PI*2093*t)+0.3*sin(2*PI*2637*t)+0.2*sin(2*PI*3136*t))*exp(-max(t-0.06,0)*5)':d=0.9:s=44100",
+       "volume=1.4,aformat=channel_layouts=stereo")
+    mk("fall", "aevalsrc='0.45*sin(2*PI*(880*t-280*t*t))':d=1.0:s=44100",
+       "afade=t=in:d=0.03,afade=t=out:st=0.75:d=0.25,volume=0.45,aformat=channel_layouts=stereo")
     # success arpeggio C-E-G-C
     notes = [("523", 0.0), ("659", 0.13), ("784", 0.26), ("1046", 0.39)]
     for i, (f, _) in enumerate(notes):
@@ -716,7 +734,7 @@ def write_hf_index(S, project, total, theme_files, size):
                          f'style="background:{s["color"]}" {timing} data-track-index="2"></div>')
         else:
             values = json.dumps({"dur": round(s["dur"], 4), "zoom": HF_ZOOM.get(s.get("effect"), 1),
-                                 "width": width, "height": height})
+                                 "width": width, "height": height, **s.get("vars", {})})
             slots.append(f'<div id="el-{s["id"]}" data-composition-id="{s["id"]}" '
                          f'data-composition-src="compositions/{s["id"]}.html" '
                          f"data-variable-values='{values}' {timing} "
