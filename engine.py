@@ -44,7 +44,7 @@ SR = 44100
 LEAD = 0.10  # narration starts slightly after the visual cut
 TAIL = 0.28  # breathing room after the line
 NARR_VOICE = "pt-BR-AntonioNeural"  # edge-tts neural voice (single knob for all narration)
-EDGE_BASE = ("-5%", "+0Hz", "+0%")  # (rate, pitch, volume) for normal speech
+EDGE_BASE = ("+8%", "+0Hz", "+0%")  # (rate, pitch, volume) for normal speech
 SAY_FALLBACK_VOICE = "Luciana"  # offline fallback if edge-tts is unreachable
 SAY_FALLBACK_RATE = "165"
 # Kokoro neural TTS (local, free) — primary engine; edge-tts is the fallback.
@@ -111,7 +111,7 @@ def _tokens(text):
         if k % 2 == 1:
             out.append(("sil", int(part)))
         else:
-            seg = part.replace("*", "").strip()
+            seg = re.sub(r"\[[a-z ]+\]", "", part).replace("*", "").strip()
             if seg:
                 out.append(("txt", seg))
     return out
