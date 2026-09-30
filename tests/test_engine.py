@@ -18,3 +18,9 @@ def test_kokoro_jobs_speak_brazilian_portuguese():
     spec = engine.kokoro_spec(jobs)
 
     assert spec == [{"text": "Olá", "voice": "pm_alex", "lang": "p", "speed": engine.KOKORO_SPEED, "out": "out.wav"}]
+
+
+def test_sfx_lands_on_a_beat_of_the_final_scene_length():
+    assert engine.sfx_offset(engine.Beat(0.5, delay=0.25), 6.0) == 3.25
+    assert engine.sfx_offset(-0.5, 6.0) == 5.5
+    assert engine.sfx_offset(1.2, 6.0) == 1.2

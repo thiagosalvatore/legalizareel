@@ -29,6 +29,7 @@ import re
 import subprocess
 import urllib.error
 import urllib.request
+from dataclasses import dataclass
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
@@ -55,6 +56,22 @@ KOKORO_SPEED = 1.05  # speaking speed (Kokoro's only prosody knob)
 
 
 # ----------------------------------------------------------------------------- storyboard
+@dataclass(frozen=True)
+class Beat:
+    """A moment in a scene: a fraction of its final length, plus a delay in seconds."""
+    fraction: float
+    delay: float = 0.0
+
+
+def sfx_offset(offset, dur):
+    """Seconds into a scene for an sfx offset: a Beat, seconds from the start, or negative from the end."""
+    if isinstance(offset, Beat):
+        return offset.fraction * dur + offset.delay
+    if offset < 0:  # counted back from the scene's end
+        return dur + offset
+    return offset
+
+
 class Storyboard:
     """Ordered list of scenes/flashes a video script fills in.
 
@@ -604,8 +621,7 @@ def build_audio_segs(S):
             sfxp = SFX / f"{name}.wav"
             if not sfxp.exists():
                 continue
-            if off < 0:  # counted back from the scene's end
-                off = dur + off
+            off = sfx_offset(off, dur)
             if name == "sadwomp" and s.get("_lastseg"):  # land the sting on "Boo."
                 off = LEAD + s["_lastseg"] + 0.05
             inputs += ["-i", str(sfxp)]
