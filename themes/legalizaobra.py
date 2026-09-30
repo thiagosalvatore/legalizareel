@@ -12,5 +12,6 @@ TEAL_DEEP = "#102c29"
 MINT = "#edffe3"
 MINT_SOFT = "#cfe3df"
 WARNING = "#dc8f1f"
+DANGER = "#b42318"
 
 HF_THEME = {"theme.css": ROOT / "themes" / "legalizaobra.css", "theme.js": ROOT / "themes" / "legalizaobra.js"}
