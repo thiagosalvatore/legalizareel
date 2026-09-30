@@ -1,209 +1,218 @@
-# hogreel
+# legalizareel
 
-You shipped something good. Nobody's using it, because nobody knows it's good yet.
+Short, punchy, on-brand videos for **Legaliza Obra**, rendered headless from HTML. You don't need a video editor or a timeline.
+You write the lines and the scene list, and your agent renders the rest.
+The default output is a vertical 1080×1920 reel in Brazilian Portuguese, for Instagram Reels, TikTok and YouTube Shorts.
 
-**hogreel** turns a short script into a punchy, on-brand hype video, rendered headless from HTML. No video editor, no timeline.
-You write the lines and the scene list; your agent renders the rest.
-Any skill, product, feature, or changelog moment is fair game. Videos are sorted by team, so drop yours in your team's folder and go.
+This repo is a fork of PostHog's [hogreel](https://github.com/PostHog/hogreel). It keeps the engine. The theme, assets and videos are new.
 
-Videos so far: [`devex/facade`](videos/devex/facade.py) (sells [`/isolating-product-facade-contracts`](https://github.com/PostHog/posthog/tree/master/.agents/skills/isolating-product-facade-contracts)), [`devex/stamphog`](videos/devex/stamphog.py) (a Suno music reel), and [`devex/postpile`](videos/devex/postpile.py) (the PostPile launch, HyperFrames scenes with an ElevenLabs voiceover). For a new video, copy `postpile`.
+Videos so far: [`marketing/economia-inss`](videos/marketing/economia-inss.py), a 48 s reel that sells the INSS savings with real app footage. For a new video, copy it.
 
 ## Quick start
 
 After [setup](#setup):
 
 ```bash
-ELEVENLABS_API_KEY=$(op read "op://General/Elevenlabs/API Key") python build.py devex/postpile
-open postpile-launch-devex.mp4
+python build.py marketing/economia-inss
+open economia-inss.mp4
 ```
 
-The voiceover take is cached after the first build, so later builds need no key as long as the narration doesn't change.
+With `ELEVENLABS_API_KEY` set, the narration is an ElevenLabs voiceover. Without it, a free local voice reads it.
 
-## Pick how it looks and how it sounds
+## How a video is made
 
-Every video makes two choices.
+- **Scenes** are [HyperFrames](https://github.com/heygen-com/hyperframes) compositions. Each scene is a small HTML page with a GSAP timeline. You can preview it live in a browser studio, and a linter checks it.
+- **App footage** comes from the frontend's Playwright recorder. It runs the real app against the mock backend, so the video shows the real product with showcase data. See [App footage](#app-footage).
+- **Soundtrack**:
+  - **ElevenLabs voiceover** (the best one). The whole narration is read as one take.
+  - **Local voice** (free, the fallback when there's no key). The fallback order is Kokoro `pm_alex` when `.tts-venv` exists, then edge-tts `pt-BR-AntonioNeural`, then macOS `say -v Luciana`.
+  - **Suno song** (music reels).
 
-**Scenes** (how it looks):
-
-- **HyperFrames** (default for new videos). Each scene is a small HTML page with a GSAP timeline, previewed live in a browser studio and linted. See [HyperFrames scenes](#hyperframes-scenes).
-- **Classic** (`facade`, `stamphog`). Each scene is an HTML string built with `themes/posthog.py` and animated with CSS keyframes. Simpler, but no live preview.
-
-**Soundtrack** (how it sounds):
-
-- **ElevenLabs voiceover** (default for feature and launch reels). One enthusiastic, fluent take over the whole reel. See [Voiceover](#voiceover-elevenlabs).
-- **Suno song** (music reels). Scenes are timed to a song's lyric track. See [Song cut](#song-cut-suno).
-- **Kokoro** (free, local, offline). Narration is synthesized a line per scene. It's the fallback when a storyboard doesn't ask for a voiceover.
-
-Voiceover and Kokoro cuts get the chiptune SFX and a quiet music bed on top. A song cut uses the song alone.
+The voiceover and local cuts get the chiptune SFX and a quiet music bed on top. A song cut uses the song alone.
 
 ## Why it's built this way
 
-The toolchain (Playwright + Chrome, ffmpeg, a local neural TTS with torch) is ~1 GB to render a ~20 MB file that changes rarely.
-So this is **render-on-demand, not build-in-CI**: an agent (or you) runs `python build.py` locally when the script changes.
+The toolchain (HyperFrames + Chrome, ffmpeg, optionally a local neural TTS with torch) is big, and the file it renders changes rarely.
+So videos are **rendered on demand, never in CI**: an agent (or you) runs `python build.py` locally when the script changes.
 There is intentionally no GitHub Actions workflow.
-The rendered `.mp4` ships as a **Release asset**, not committed to git (see [Publishing](#publishing)).
+The rendered `.mp4` ships as a **Release asset** and is never committed to git (see [Publishing](#publishing)).
 
 ## Layout
 
 ```text
-engine.py                      # brand-agnostic pipeline: timing, TTS/voiceover, song sync, SFX, mix, render + mux
-themes/posthog.py              # the brand layer for classic scenes: CSS, page() chrome, hedgehog helpers, palette
-themes/posthog.css + .js       # the brand layer for HyperFrames scenes (CSS + GSAP motion helpers)
-videos/<team>/<name>.py        # one video = one storyboard (videos sorted by owning team)
-videos/devex/postpile-scenes/  # a HyperFrames project: compositions/<scene id>.html + its own CSS
-build.py                       # thin dispatcher: `python build.py <team>/<name>`
-render_anim.mjs, poster.mjs    # classic path: frame capture and the poster still
-kokoro_batch.py                # Kokoro synthesis in one model load (runs in .tts-venv)
-assets/                        # shared hedgehog PNGs, logos, fonts, songs, product art
-.claude/skills/suno-song/      # agent skill: Suno lyrics/styles + syncing a song to the scenes
+engine.py                          # brand-agnostic pipeline: timing, TTS/voiceover, song sync, SFX, mix, HyperFrames render + mux
+themes/legalizaobra.py             # palette constants + HF_THEME (the files a scene project links in)
+themes/legalizaobra.css + .js      # the brand layer for scenes: fonts, palette, blocks, GSAP motion helpers
+videos/<team>/<name>.py            # one video = one storyboard
+videos/<team>/<name>-scenes/       # its HyperFrames project: compositions/<scene id>.html
+app_clips.py                       # copies app recordings from the frontend recorder into assets/app/
+build.py                           # thin dispatcher: `python build.py <team>/<name>`
+kokoro_batch.py                    # Kokoro synthesis in one model load (runs in .tts-venv)
+assets/brand/                      # logo, icon, app icon, the site's construction photo
+assets/fonts/                      # Hedvig Letters Serif + Inter (OFL)
+assets/app/                        # app recordings (git-ignored, filled by app_clips.py)
+.claude/skills/suno-song/          # agent skill: Suno lyrics/styles + syncing a song to the scenes
 ```
 
-The split is the point: **engine** knows nothing about a brand, **theme** owns all the PostHog look, **storyboard** owns just the story.
-A new video is a new `videos/<team>/<name>.py` (plus its scenes folder on the HyperFrames path). Everything else is reused.
+The layers stay separate:
+- The **engine** knows nothing about a brand.
+- The **theme** owns the whole Legaliza Obra look.
+- The **storyboard** owns only the story.
 
 ## Setup
 
-Needs **ffmpeg/ffprobe**, **node + Playwright + Google Chrome**, **Node 22+** for HyperFrames, and a Python venv for Kokoro.
+Needs **ffmpeg/ffprobe**, **Node 22+** (HyperFrames runs through `npx`) and **Google Chrome**. `uv` is optional, for edge-tts and the tests.
 
 ```bash
-# ffmpeg (or use a flox env that provides it)
 brew install ffmpeg espeak-ng
 
-# node side: Playwright drives an installed Google Chrome (channel: 'chrome')
-npm install
-npx playwright install chrome   # skip if you already have Google Chrome
-
-# Kokoro neural TTS (local + free). torch arrives as a dependency.
+# optional: Kokoro neural TTS (local, free, offline). torch comes with it, about 1 GB.
 python3.12 -m venv .tts-venv
 .tts-venv/bin/pip install kokoro soundfile
 ```
 
-The HyperFrames CLI runs through `npx`, pinned in `engine.HF_CLI`, so there's nothing to install for it.
-Kokoro falls back to `edge-tts` (needs network) and then macOS `say` if `.tts-venv` is absent, so a quick render still works without the venv, just with a worse voice.
+The HyperFrames CLI is pinned in `engine.HF_CLI`, so you install nothing for it.
+If `.tts-venv` is missing, the engine uses edge-tts (needs network), then macOS `say`.
+
+## App footage
+
+The frontend repo (`obra-certa-frontend`) has a mock backend and a Playwright recorder, in `mock-backend/` and `mock-backend/recording/`. The recorder shoots 1080×1920 clips of the real app with a visible cursor. Login still goes through the real Supabase project, and every account sees the showcase account (Construtora Horizonte).
+
+```bash
+cd ~/projects/personal/legaliza-obra/obra-certa-frontend
+npx tsx mock-backend/server.ts                       # terminal 1: mock API on :8000
+pnpm dev --port 3100                                 # terminal 2
+cd mock-backend/recording && npm install
+npm run login                                        # once, or when the Supabase session expires
+npm run record                                       # every shot; `npm run record -- 02 07` for some
+```
+
+You can use other ports so you don't clash with another checkout:
+- Run the mock with `MOCK_PORT=8100` and the app with `NEXT_PUBLIC_API_URL=http://localhost:8100 pnpm dev --port 3200`.
+- Then record with `BASE_URL=http://localhost:3200 MOCK_URL=http://localhost:8100 npm run record`.
+
+A storyboard lists the clips it needs, and its `main()` calls `app_clips.ensure(...)`. That copies each clip into `assets/app/`, scaled to 1080 wide with frequent keyframes so HyperFrames can seek it. It also refreshes a copy whose recording is newer. `OBRA_FRONTEND` overrides where the frontend checkout is. `python app_clips.py` syncs every recorded clip.
+
+In a scene, a clip goes in a `.screen` frame:
+
+```html
+<div class="screen" id="obra-screen">
+  <video id="obra-video" class="clip" src="assets/app/01-obra-andrade.mp4" data-start="0" data-media-start="3.2" muted playsinline></video>
+</div>
+```
+
+- `data-media-start` trims the start of the clip.
+- To pan or zoom, animate the `<video>` with `x`, `y` and `scale`. Its transform origin is its top-left corner.
+- `scale: 1.06, x: -70` hides the app's sidebar rail.
+- `scale: 1.8, x: -394, y: -925` centres a dialog in the middle of the app.
 
 ## Build
 
 ```bash
-python build.py <team>/<name>   # e.g. devex/postpile; no argument renders devex/facade
+python build.py <team>/<name>   # no argument renders marketing/economia-inss
 ```
 
 The output is `<name>.mp4` in the repo root, plus `poster.png`.
 
 Env toggles:
 
-- `SKIP_RENDER=1`: keep the rendered video and only rebuild the audio + mux. Seconds instead of minutes. Use it when you changed sound but not visuals. On the classic path it reuses the captured frames, so narration and timing can change too. On the HyperFrames path it reuses the last rendered video and refuses when any scene changed length.
-- `SHORT=1`: render the ~40s teaser cut (keeps the storyboard's `short_keep` beats, drops flashes), output suffixed `-40s`.
-- `SONG=path/to/song.m4a`: the song cut, see [Song cut](#song-cut-suno). Output suffixed `-song`.
-- `SONG_END=2:22`: with `SONG`, end the video there (seconds or m:ss) instead of at the song's end.
+- `SKIP_RENDER=1`: keep the last rendered video and only rebuild the audio and the mux. It refuses when any scene changed length.
+- `SHORT=1`: render the teaser cut. It keeps only the storyboard's `short_keep` beats, and the output name gets `-40s`.
+- `SONG=path/to/song.m4a`: the song cut, see [Song cut](#song-cut-suno). The output name gets `-song`.
+- `SONG_END=2:22`: with `SONG`, end the video at this time instead of at the song's end.
 - `LYRICS=1`: print the paste-ready Suno lyrics sheet and exit without rendering.
 
-## HyperFrames scenes
+`build(..., size=VERTICAL)` is the default (1080×1920). `size=WIDE` renders 1920×1080. Scenes read the size as the `width` and `height` variables.
 
-[HyperFrames](https://github.com/heygen-com/hyperframes) is an open-source HTML-to-video framework: GSAP timelines, seekable frame capture, a live-reload preview, and a linter.
-A storyboard hands its visuals to it with `build(sb, ..., hyperframes=<dir>, theme_files=HF_THEME, poster_scene="<id>")`:
+## Scenes
+
+A storyboard hands its visuals to HyperFrames with `build(sb, ..., hyperframes=<dir>, theme_files=HF_THEME, poster_scene="<id>")`.
 
 - Each scene is a sub-composition, `<dir>/compositions/<scene id>.html`, with one paused GSAP timeline.
-  It reads its final length from the `dur` variable, so beats land at a fraction of the scene and still line up whatever the soundtrack makes the scene's length.
-- The scene's `effect` arrives as the `zoom` variable, and every scene ends with `window.brand.camera(tl, "<id>", zoom, dur)`: a slow push on the stage while the logo and team badge hold still.
-- `scene(..., blend=0.6)` cross-fades into that scene instead of cutting. The scene before stays on screen underneath while this one fades in, and both keep their timing.
-- The engine still does timing, voice, song sync, SFX and the mix. It writes the root `index.html` (slots at the computed times, flashes as color cards), renders silently with the pinned CLI, and muxes the audio on top.
-- `assets/` and the theme files are symlinked into the project at render time, so scenes use `assets/...` and the classes in `themes/posthog.css`.
+  - It reads its final length from the `dur` variable. Beats land at a fraction of the scene, so they still line up whatever the soundtrack makes the scene's length.
+- The scene's `effect` arrives as the `zoom` variable. Every scene ends with `window.brand.camera(tl, "<id>", zoom, dur)`: a slow push on the stage while the logo holds still.
+- `scene(..., blend=0.5)` cross-fades into that scene instead of cutting.
+- The engine writes the root `index.html`, renders silently with the pinned CLI, and muxes the audio on top.
+- `assets/` and the theme files are symlinked into the project at render time. That's why scenes use `assets/...` paths and the classes in `themes/legalizaobra.css`.
 
 To work on scene visuals, render once (that writes `index.html`), then:
 
 ```bash
-cd videos/devex/postpile-scenes
+cd videos/marketing/economia-inss-scenes
 npx hyperframes@0.8.85 preview                 # live-reload studio
 npx hyperframes@0.8.85 lint                    # must be 0 errors
 npx hyperframes@0.8.85 snapshot --at 12.5,30   # stills for a quick look
 ```
 
-Before writing scenes, read `npx hyperframes@0.8.85 docs compositions` and `docs gsap`, and copy an existing scene's file shape (`compositions/pile.html`).
-HyperFrames sends anonymous usage telemetry by default; `npx hyperframes@0.8.85 telemetry disable` turns it off.
+Before you write scenes, read `npx hyperframes@0.8.85 docs compositions` and `docs gsap`, and copy an existing scene's file shape (`compositions/obra.html`).
+HyperFrames sends anonymous usage telemetry by default. `npx hyperframes@0.8.85 telemetry disable` turns it off.
 
 ## Voiceover (ElevenLabs)
 
 A storyboard passes `build(..., voiceover={"voice": <id>, "model": "eleven_v3", "settings": {...}})`.
-The whole narration goes to ElevenLabs as **one take**, so it flows through the reel instead of restarting every scene.
-The per-character timestamps cut it back into a chunk per scene.
-Pauses longer than 0.3s get capped (`VO_MAX_PAUSE`), and a scene shorter than its `min_dur` holds on silence.
+
+- The whole narration goes to ElevenLabs as **one take**, so it flows through the reel instead of restarting every scene. The per-character timestamps cut it back into a chunk per scene.
+- Pauses longer than 0.3 s are shortened to 0.3 s (`VO_MAX_PAUSE`).
+- A scene shorter than its `min_dur` holds on silence.
+- `eleven_v3` speaks Brazilian Portuguese with any premade voice. `economia-inss` uses Brian (`nPczCjzI2devNBz1zQrb`). Try one or two lines in a few voices and pick the one that sounds most natural in pt-BR.
 
 Write the narration as one read:
 
-- v3 audio tags like `[excited]` steer the delivery.
+- v3 audio tags like `[excited]` steer the delivery. The local voices drop them.
 - Punctuation sets the pace: quick lists speed up, `...` slows down.
-- `[[slnc N]]` markers are ignored (they're for Kokoro).
+- Write numbers the way you want them said ("81 mil", "legalizaobra ponto com").
 
-`postpile` uses Brian (`nPczCjzI2devNBz1zQrb`) at stability 0.5, speed 1.12.
-The key lives in the team 1Password: `op read "op://General/Elevenlabs/API Key"`.
-The account also holds cloned voices of real people; stick to the premade ones unless that person said yes.
-
-**Credits.** The shared account has 10,000 characters a month, and a full take is ~1,500.
-Takes are cached in `audio/voiceover/` by text + voice settings, so a rebuild with unchanged narration is free and needs no key.
-When every scene line already appears, in order, in a cached take of the same voice, that take is reused and cut: dropping a scene, or trimming a line to a phrase the take already says, is free and keeps the delivery.
-Any other change re-reads the whole take, which costs credits and changes the delivery elsewhere too.
-To audition voices, sample one or two lines, not the whole script.
+Takes are cached in `audio/voiceover/` by text and voice settings.
+- A rebuild with unchanged narration is free and needs no key.
+- Dropping a scene, or trimming a line to a phrase the take already says, reuses the cached take.
+- Any other change re-reads the whole take.
 
 ## Song cut (Suno)
 
 `SONG=path/to/song.m4a python build.py <team>/<name>` makes a music video: the song replaces narration, SFX, and the music bed.
-Load the `suno-song` skill for the whole workflow (lyrics, styles, generation, sync). Team style prompts and what each one produced live in [`videos/devex/suno-styles.md`](videos/devex/suno-styles.md).
+Load the `suno-song` skill for the whole workflow (lyrics, styles, generation, sync).
 
-How the sync works:
-
-- The song needs timed lyrics embedded in the file (Suno exports have them).
-- Scenes carry an optional `lyric=` (the song version of the line, with Suno `[Section]` tags). The song is matched against that, or against `narration` when there's no lyric. `LYRICS=1` prints the sheet to paste into Suno.
-- Each scene needs at least one of its lines sung, in scene order, and runs until the next scene's line is sung. Other lines (chorus, ad-libs) just hold the current scene.
-- A scene with neither `lyric` nor `narration` is a **filler** for instrumental stretches: it takes its `min_dur` out of the sung scene before it, so the next sung line still lands on its own frame.
-- Scenes the song doesn't reach keep `min_dur` and play silent, which shows how much song is still missing.
-- A song longer than the video is trimmed to the last scene with a 1.5s fade-out. For a take that keeps going after its last line, pick the end by ear with `SONG_END`, since Suno's lyric timings get unreliable near the end.
-
-A song cut changes scene lengths, so it always needs a full render (no `SKIP_RENDER`).
+- The song needs timed lyrics in the file. Suno's m4a exports have them.
+- Scenes can have a `lyric=`, the sung version of the line. The engine matches the song against it, or against `narration` when a scene has no lyric. `LYRICS=1` prints the sheet to paste into Suno.
+- Each scene needs at least one of its lines sung, in scene order. A scene runs until the next scene's line is sung.
 
 ## Sound effects
 
-A scene's `sfx=[(name, offset)]` plays a sound at `offset` seconds into the scene. A negative offset counts back from the scene's end, for a sting that should close the scene whatever its final length.
+A scene's `sfx=[(name, offset)]` plays a sound at `offset` seconds into the scene. A negative offset counts back from the scene's end.
 
-- The generated sounds are in `engine.gen_sfx()` (`ding`, `tick`, `airhorn`, `success`, …).
-- To reuse a real sound, such as a hook from one of the songs, cut it with `sb.sound("name", "assets/songs/x.m4a", start, end, fade_in=..., fade_out=...)` and use `"name"` in `sfx` like any other. `postpile` ends on the "dev-dev-DevEx" chop from `stamp-hog.m4a` this way.
-- The music bed fades out over the last scene, so an end-card stinger plays on its own.
+- The generated sounds are in `engine.gen_sfx()`: `ding`, `tick`, `boom`, `airhorn`, `success`, `riser`, `drumroll` and more.
+- To reuse a real sound, cut it with `sb.sound("name", "path/to/file.m4a", start, end, fade_in=..., fade_out=...)`. Then use `"name"` in `sfx` like any other sound.
+- The music bed fades out over the last scene.
 
 ## A new video
 
 ```bash
-mkdir -p videos/<your-team>
-cp videos/devex/postpile.py videos/<your-team>/<name>.py
-cp -r videos/devex/postpile-scenes videos/<your-team>/<name>-scenes   # then replace the compositions
-python build.py <your-team>/<name>
+mkdir -p videos/<team>
+cp videos/marketing/economia-inss.py videos/<team>/<name>.py
+cp -r videos/marketing/economia-inss-scenes videos/<team>/<name>-scenes   # then replace the compositions
+python build.py <team>/<name>
 ```
-
-For a classic video, copy `videos/devex/facade.py` instead and edit the `scene()` / `flash()` calls and `POSTER`.
-Reuse the theme as-is, or write a sibling `themes/<brand>.py` (and `.css`/`.js`) with the same surface and import that instead.
 
 ## Shared infrastructure
 
-The engine and theme belong to everyone.
-A tweak that makes one video better (a new effect, a cleaner caption, a better voice setting, a tighter scene helper) should land in `engine.py` or the theme so every team's videos get it for free.
-Keep only the story in your `videos/<team>/` script; push genuinely reusable wins down into the shared layer instead of copy-pasting them.
+The engine and theme are shared by every video.
+A tweak that makes one video better belongs in `engine.py` or the theme, so every video gets it: a new effect, a cleaner block, a better voice setting.
+Keep only the story in your `videos/<team>/` script.
 
-Keep the docs honest: if you change the structure, commands, palette, or fonts, update this README and `CLAUDE.md` in the same change. Agents working here are expected to do that automatically.
+Keep the docs honest. If you change the structure, commands, palette, or fonts, update this README and `CLAUDE.md` in the same change.
 
 ## Staying on-brand
 
-The theme follows PostHog's [brand guidelines](https://posthog.com/handbook/brand): exact palette hex, official logo variants (white on dark, standard on light), official hedgehog art only (never AI-drawn), and the house voice for narration.
-The load-bearing rules are pinned in [CLAUDE.md](CLAUDE.md#brand-compliance); the handbook is the source of truth.
-Two things worth knowing up front: the palette is deliberately small and **has no green** (blue is the positive accent), and the hype animation style is an intentional deviation from the brand's "understated" default. Fine for a promo video, never for product UI.
+The theme follows the app and site after the redesign (frontend `app/globals.css`, `components/site/*`). [CLAUDE.md](CLAUDE.md#brand) pins the rules.
 
 ## Publishing
 
-The mp4 is a Release asset, kept out of git history. One release per video:
+The mp4 is a Release asset, kept out of git history. Make one release per video:
 
 ```bash
-gh release create postpile-v1 postpile-launch-devex.mp4 \
-  --title "PostPile launch video" \
-  --notes "Re-render with: python build.py devex/postpile"
+gh release create economia-inss-v1 economia-inss.mp4 poster.png \
+  --title "Economia de INSS reel" \
+  --notes "Re-render with: python build.py marketing/economia-inss"
 ```
 
-`poster.png` is a build output too (not committed); every build regenerates it.
-Slack auto-generates a video thumbnail from an early frame, which is often dark.
-Upload `poster.png` as a separate image alongside the video for a branded thumbnail.
+`poster.png` is a build output too. Every build makes a new one.

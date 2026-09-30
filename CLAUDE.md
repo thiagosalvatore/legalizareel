@@ -1,72 +1,98 @@
-# hogreel — agent guide
+# legalizareel — agent guide
 
-Short, brand-themed hype/explainer videos for PostHog skills, rendered headless from HTML.
-Read [README.md](README.md) for setup and the build commands first.
+Short, brand-themed hype and explainer videos for **Legaliza Obra**, rendered headless from HTML. Most are vertical pt-BR reels.
+Read [README.md](README.md) first for setup and the build commands.
 
 ## Architecture (keep the layers separate)
 
-- `engine.py` — **brand-agnostic** pipeline: HTML scenes → frames → clips → concat → mux, plus TTS and SFX. Never put brand or story specifics here.
-- `themes/posthog.py` — the **brand layer**: CSS, `page()` chrome, hedgehog helpers, palette. All PostHog look lives here. A different brand = a sibling theme module with the same surface.
-- `videos/<team>/<name>.py` — one **story**: a `Storyboard` of `scene()`/`flash()` calls handed to `engine.build()`. Videos are sorted by owning team; a new video is a new file in your team's folder, nothing else.
-- `build.py` — dispatcher: `python build.py <team>/<name>` (default `devex/facade`).
-- **HyperFrames scenes (the default for new videos; `devex/postpile` is the reference)** — a storyboard can pass `hyperframes=<dir>` to `build()`. Each scene is then a HyperFrames sub-composition `<dir>/compositions/<scene id>.html` with its own GSAP timeline, and the engine writes the root `index.html` (generated, gitignored) and renders with the pinned `hyperframes` CLI. Timing, TTS, song sync and the audio mix are unchanged. The brand for this path is `themes/posthog.css` + `themes/posthog.js` (`HF_THEME`), linked into the project at render time. Scenes read their length from the `dur` variable and time beats as fractions of it, so both the narrated and the song cut line up. The storyboard `effect` reaches the scene as the `zoom` variable; every scene ends with `window.brand.camera(...)`, which pushes in on the content and keeps the logo and badge still (never scale the whole slot: that zooms the chrome). Before writing scenes, read the HyperFrames rules: `npx hyperframes@0.8.85 docs compositions` / `gsap`, and copy an existing scene's file shape (`videos/devex/postpile-scenes/compositions/pile.html`).
+- `engine.py`: the **brand-agnostic** pipeline. It times the scenes, reads the narration (ElevenLabs take, or Kokoro / edge-tts / `say` per line), times the scenes to a song, and generates the SFX and music bed. Then it writes the root HyperFrames `index.html`, renders, and muxes. Never put brand or story specifics here.
+- `themes/legalizaobra.{css,js,py}`: the **brand layer**. The CSS holds fonts, palette, stage variants and blocks. `window.brand` holds the motion helpers. The Python file holds the palette constants and `HF_THEME`. The whole Legaliza Obra look lives here.
+- `videos/<team>/<name>.py`: one **story**. It is a `Storyboard` of `scene()`/`flash()` calls handed to `engine.build()`, with its HyperFrames project in `videos/<team>/<name>-scenes/compositions/<scene id>.html`. `marketing/economia-inss` is the reference.
+- `app_clips.py`: copies app recordings from the frontend's recorder into `assets/app/` (git-ignored). A storyboard lists the clips it uses and calls `app_clips.ensure([...])` in `main()`.
+- `build.py`: the dispatcher. `python build.py <team>/<name>` (default `marketing/economia-inss`).
 
-When you change a scene's visuals, you must re-render (`python build.py <team>/<name>`) — frames are captured, not live. Use `SKIP_RENDER=1` only when you changed audio/timing but not visuals. `SONG=<file>` swaps narration for a song with embedded timed lyrics and re-times scenes to it (see README), so it always needs a full render. For sung versions, load the `suno-song` skill (`.claude/skills/suno-song/SKILL.md`): scenes carry an optional `lyric=` for the song, and `LYRICS=1` prints the Suno sheet. Keep `narration` for the spoken TTS cut. A story can pass `voiceover={...}` to `build()` to read the narration as one ElevenLabs take instead (see README → Voiceover); write that narration as one continuous read. That's the default soundtrack for feature and launch reels; a Suno song is for music reels, Kokoro is the free local fallback. The ElevenLabs account is shared and has 10,000 characters a month (a take is ~1,500): audition voices on a line or two, and prefer edits the engine can cut from a cached take (drop a scene, trim a line to a phrase the take already says) over re-reads.
+**Scenes:**
+- Each scene is a HyperFrames sub-composition with one paused GSAP timeline.
+- It reads its length from `dur`, its camera push from `zoom`, and the frame size from `width`/`height`. Time beats as fractions of `dur`, so both the narrated cut and the song cut line up.
+- Every scene ends with `window.brand.camera(...)`, which pushes in on the content and keeps the logo still. Never scale the whole slot: that zooms the logo too.
+- Before writing scenes, read `npx hyperframes@0.8.85 docs compositions` / `gsap`, and copy an existing scene's file shape (`videos/marketing/economia-inss-scenes/compositions/obra.html`).
 
-On the HyperFrames path there's no frame cache. `SKIP_RENDER=1` keeps the last rendered `video_hf.mp4` and only redoes the audio, which only works when no scene changed length (it refuses otherwise); any visual or timing change re-renders. To iterate on one scene's visuals, render once (writes `index.html`), then run `npx hyperframes@0.8.85 preview` in the scenes folder for live reload, or `npx hyperframes@0.8.85 snapshot --at <t>` for stills. `npx hyperframes@0.8.85 lint` must report 0 errors.
+**Frame size:** `build(..., size=VERTICAL)` (1080×1920) is the default. `WIDE` is 1920×1080. Design scenes for the vertical safe area: platform UI covers about the top 250 px and the bottom 400 px of a reel. Keep headlines and numbers between those.
+
+**App footage** comes from the frontend repo's `mock-backend/recording/` (Playwright, 1080×1920, fake cursor, mock data). README → App footage has the commands.
+- Frame a clip in `.screen` and animate the `<video>` (`x`, `y`, `scale`, origin at its top-left corner) to pan and zoom onto the moment that matters.
+- Never animate `y` on a `.screen`'s children from a theme helper: it fights the video's own pan.
+- If the recorder fails, fix the frontend's mock backend or recorder in a PR on the frontend repo. Do not work around it here.
+
+**Rendering:**
+- When you change a scene's visuals, re-render (`python build.py <team>/<name>`).
+- `SKIP_RENDER=1` only redoes the audio, and it refuses when a scene changed length.
+- Iterate on one scene with `npx hyperframes@0.8.85 preview` or `snapshot --at <t>` in the scenes folder, after one render has written `index.html`.
+- `npx hyperframes@0.8.85 lint` must report 0 errors.
+
+**Soundtrack:**
+- A story passes `voiceover={...}` when `ELEVENLABS_API_KEY` is set. Write that narration as one continuous read.
+- The local voices strip v3 tags like `[excited]`, so one narration serves both cuts.
+- For a sung cut, load the `suno-song` skill.
 
 ## Render-on-demand, never CI
 
-The toolchain is ~1 GB to produce a ~9 MB file. There is **no CI workflow on purpose** — an agent renders locally when the script changes. Don't add GitHub Actions, don't commit generated media. The `.mp4` ships as a Release asset and `poster.png` regenerates each build — nothing generated is committed.
+There is **no CI workflow on purpose**. An agent renders locally when the script changes. Don't add GitHub Actions, and don't commit generated media or app recordings. The `.mp4` ships as a Release asset, and `poster.png` is rebuilt on every build.
 
 ## Shared by everyone, kept in sync
 
-The engine and theme are shared by every team. Improvements belong there, not copy-pasted per video — a better effect, caption, transition, or voice setting should lift everyone's output, not just one team's. Put only team and story specifics in `videos/<team>/<name>.py`; when you catch yourself special-casing the engine for a single video, generalize it instead.
+Improvements belong in the engine or the theme, not copy-pasted per video. When you catch yourself special-casing the engine for one video, generalize it instead.
 
-Keep `README.md` and this file in sync with reality. If you change the structure, commands, palette, or fonts, update both in the same change — never leave the docs stale.
+Keep `README.md` and this file in sync with reality. If you change the structure, commands, palette, or fonts, update both in the same change.
 
-## Brand compliance
+## Brand
 
-The canonical source is `~/workspace/posthog.com/contents/handbook/brand/` (visual-identity, tone, assets) — read it when in doubt; this section only pins the load-bearing, stable rules. The north-star test: **remove the logo — does it still feel like PostHog?** It should. Handcrafted beats generated.
+The source of truth is the frontend: `app/globals.css` (tokens), `app/layout.tsx` (fonts), `components/site/*` (the marketing site), `lib/site-content.ts` (claims). Match it, and re-check it when the site changes.
 
-### Palette — exact hex, and it's deliberately small
+### Palette
 
-| Role | Light | Dark |
-| --- | --- | --- |
-| Background / opposite-mode text | `#EEEFE9` | `#151515` |
-| Red (brand color, *not* a status color) | `#F54E00` | same |
-| Blue (primary accent) | `#1D4AFF` | same |
-| Yellow | `#DC9300` | `#F1A82C` |
-| Gray | `#BFBFBC` | same |
+| Role | Hex |
+| --- | --- |
+| Brand teal (primary; hero and CTA panels) | `#1F514C` |
+| Teal 2 | `#2A5F59` |
+| Deep teal (frames, dark stage) | `#102C29` |
+| Mint (tint, highlight on teal) | `#EDFFE3` / `#DAF5CB` |
+| Soft mint (sublines on teal) | `#CFE3DF` |
+| Background / surface | `#FFFFFF` / `#F5F8F7` |
+| Text | `#141414` |
+| Warning (the "cost is high" number only) | `#DC8F1F` |
 
-- **There is no brand green.** Don't reach for green/teal as a "success/good" color — that's the status-indicator habit the brand avoids. Use blue for the positive accent, or opacity, before any new hue.
-- More colors = each means less. Modify with **opacity**, don't add hues. No gradient backgrounds (solid only). No rainbow palettes.
+- Teal is the brand. A teal stage takes white headlines, `#CFE3DF` sublines and mint highlights, like the site's hero.
+- Use only the solid colours above. No gradients, and don't add new hues.
 
 ### Type
 
-- **Open Runde** — body and headings. Weights 400/500/600/700. Loaded by posthog.com via Cloudinary (URLs in `posthog.com/src/components/Layout/Fonts.css`); bundle the woff2 into `assets/fonts/` for offline, deterministic capture.
-- **Squeak** — expressive display font for marketing headlines. Bundled at `posthog.com/static/fonts/squeak-bold-webfont.woff2`. Rules: **always uppercase, always bold, only with hedgehog art**, letter-spacing −2%, line-height 100%. Never for body/subtitles, never without a hog.
-- **Loud Noises** — only for text a hedgehog is holding/saying (signs, speech bubbles), uppercase.
-- Monospace (Menlo) is fine for code blocks. No other decorative fonts. Headings are **sentence case** (Squeak's all-caps is the one exception).
+- **Hedvig Letters Serif** for headlines and big numbers. Weight 400, tight letter-spacing (−0.02em).
+- **Inter** for body text, labels and pills.
+- Both are bundled in `assets/fonts/` (OFL). Headings use sentence case.
 
 ### Logo
 
-- Use the official SVG. **White wordmark (`posthog-logo-white.svg`) on dark/colored backgrounds; standard (`posthog-logo.svg`) on light. Never the standard logo on dark.** `page()` already picks the variant from the `dark` flag.
-- Never modify logomark colors. **Never pair the bare logomark with hand-set "PostHog" text** — use the real logo lockup. Don't stretch/skew/rotate/add effects. Don't animate the logo (spin/bounce/glitch); a gentle fade-in to a still frame is fine. Full logo min 80px wide (else logomark only); keep clear space ≈ the height of the "P".
+- Use `assets/brand/logo.png`, the official lockup. It is teal on transparent.
+- On white or surface stages, show it bare. On teal, put it on a white pill (`.logo-pill`) or card, because there is no white logo.
+- Never recolour, stretch, or animate it beyond a fade or pop in. Never rebuild the lockup from the icon plus hand-set text.
 
-### Hedgehogs (Max)
+### Claims (be honest)
 
-- **Official art only** (art library / press page assets in `assets/`). **Never AI-generated hogs**, never modify existing ones, no competitor/derivative styles. Use them to express a point, not just to fill space.
+- The site's headline claim is **"até 73%"** (`MAX_SAVINGS_PERCENT` in `lib/site-content.ts`). Always say "até". Never say or imply a guaranteed rate.
+- Show real numbers from the mock showcase data (Residência Andrade: INSS R$ 81.141 → R$ 47.251, R$ 33.890 saved, 41.8%). Say that it is "nessa obra".
+- Don't use the calculator page's "R$ 2M+ economizados" or "500+ obras" stats. Nothing else in the code backs them.
 
-### Tone (narration + on-screen copy)
+### Tom de voz (narration + on-screen copy)
 
-- Explain it to a smart friend: clear, simple, specific, direct, **honest including about limitations**, conversational.
-- Cut hedge/weasel words — leverage→use, utilize→use, streamline→speed up, plus seamless / robust / best-in-class / holistic / synergy. Active voice. Lead with the benefit, not the feature. No forced humor (clear beats clever; let the genuine jokes land).
-- Product names in **Sentence case** ("Product analytics", "Visual review"), not Title Case.
+- Brazilian Portuguese, spoken like a clear, friendly specialist talking to a builder or an accountant. Use short sentences and the active voice. Lead with the benefit: paying less INSS, legally, without spreadsheets.
+- Use the product's own words: obra, pedreiros, eSocial, guia DARF, simulação, orçamento.
+- Cut filler words: "revolucionário", "inovador", "solução completa", "otimize seus processos".
+- Name the product **Legaliza Obra** in narration (the logo says "legalizaobra").
 
-### Animation — the one deliberate deviation
+### Animation
 
-The brand default is *understated* (animate-in then settle, don't loop). These videos are intentionally **hype** — punch zooms, flashes, chiptune SFX, comedic stings. That's the format and it's on purpose. Keep that energy scoped to promo videos; never carry it into product UI. (The idle hedgehog bob is the mildest nod to "bring characters to life.")
+The videos are intentionally **hype**: punch zooms, flashes, chiptune SFX. That's the format. Keep that energy in promo videos only, never in the product UI.
 
 ## Python style
 
