@@ -1,0 +1,147 @@
+<!doctype html>
+<html data-composition-variables='[{"id":"dur","type":"number","label":"Scene length (s)","default":11},{"id":"zoom","type":"number","label":"Camera push (1 = none)","default":1},{"id":"cards","type":"number","label":"Cards in the pile","default":23},{"id":"fallFrom","type":"number","label":"Pile starts (fraction)","default":0.06},{"id":"fallSpan","type":"number","label":"Pile duration (fraction)","default":0.46},{"id":"errorsAt","type":"string","label":"Error toasts (fractions)","default":"0.72,0.77,0.82,0.87"},{"id":"collapseAt","type":"number","label":"Pile collapses (fraction)","default":0.93}]'>
+  <body>
+    <template id="burocracia-template">
+      <style>
+        #burocracia-root { position: absolute; inset: 0; }
+        #burocracia-head { position: absolute; top: 250px; left: 0; right: 0; z-index: 50; gap: 28px; }
+        #burocracia-count { font-size: 44px; }
+        #burocracia-count b { font-family: var(--display); font-weight: 400; font-size: 64px; color: var(--teal); }
+        #burocracia-cards, #burocracia-toasts { position: absolute; inset: 0; }
+        #burocracia-cards { z-index: 20; }
+        #burocracia-toasts { z-index: 45; }
+        .ev-row {
+          position: absolute; left: 110px; top: 0; width: 860px; height: 104px;
+          display: flex; align-items: center; gap: 22px; padding: 0 30px;
+          background: var(--white); border: 1px solid var(--divider); border-radius: 22px;
+          box-shadow: 0 18px 36px rgba(16, 44, 41, .16); font-size: 34px; font-weight: 600; color: var(--ink);
+        }
+        .ev-row .code { background: var(--mint); color: var(--teal); border-radius: 12px; padding: 8px 14px; font-size: 28px; font-weight: 700; }
+        .ev-row .darf { background: #fff6e5; color: #945509; }
+        .ev-row .when { margin-left: auto; color: #6b6b6b; font-weight: 500; }
+        .ev-row .stamp {
+          position: absolute; right: 24px; top: 50%; transform: translateY(-50%) rotate(-8deg);
+          border: 5px solid var(--danger); color: var(--danger); border-radius: 10px;
+          padding: 2px 14px; font-size: 30px; font-weight: 800; letter-spacing: .06em; opacity: 0;
+          background: var(--white);
+        }
+      </style>
+      <div id="burocracia-root" data-composition-id="burocracia" data-width="1080" data-height="1920">
+        <div class="stage light">
+          <img class="logo" id="burocracia-logo" src="assets/brand/logo.png" alt="Legaliza Obra" />
+          <div class="center" id="burocracia-head">
+            <div class="big s96" id="burocracia-title">E ainda tem o <span class="hl">eSocial</span></div>
+            <div class="badge" id="burocracia-count"><b id="burocracia-n">0</b> envios numa obra só</div>
+          </div>
+          <div id="burocracia-cards"></div>
+          <div id="burocracia-toasts"></div>
+        </div>
+      </div>
+      <script>
+        (() => {
+          const { dur, zoom, cards, fallFrom, fallSpan, errorsAt, collapseAt } = window.__hyperframes.getVariables();
+          const tl = gsap.timeline({ paused: true });
+          const B = window.brand;
+          const ERRORS_AT = String(errorsAt).split(",").map(Number);
+          const EVENTS_IN_OBRA = 80;
+
+          let seed = 11;
+          const rand = () => {
+            seed = (seed + 0x6d2b79f5) | 0;
+            let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+            t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+            return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+          };
+
+          const setup = [
+            ["S-1000", "Cadastro do empregador", ""],
+            ["S-1005", "Cadastro da obra", ""],
+            ["S-1010", "Rubricas", ""],
+            ["S-1020", "Lotação tributária", ""],
+            ["S-2300", "José da Silva", ""],
+            ["S-2300", "Antônio Pereira", ""],
+            ["S-2300", "Marcos Oliveira", ""],
+          ];
+          const monthly = ["Fev", "Mar", "Abr", "Mai"].flatMap((month) => [
+            ["S-1200", "Remuneração", month],
+            ["S-1210", "Pagamentos", month],
+            ["S-1299", "Fechamento da folha", month],
+            ["DARF", "Guia INSS", month],
+          ]);
+          const events = [...setup, ...monthly].slice(0, cards);
+
+          const box = document.getElementById("burocracia-cards");
+          const rows = events.map(([code, title, month], i) => {
+            const row = document.createElement("div");
+            row.className = "ev-row";
+            row.id = `burocracia-row-${i}`;
+            const chip = code === "DARF" ? "code darf" : "code";
+            row.innerHTML = `<span class="${chip}">${code}</span><span>${title}</span>` +
+              `<span class="when">${month}</span><span class="stamp">REJEITADO</span>`;
+            box.appendChild(row);
+            return row;
+          });
+
+          B.fadeIn(tl, "#burocracia-logo");
+          B.upIn(tl, "#burocracia-title", 0.05);
+          B.popIn(tl, "#burocracia-count", 0.35);
+
+          const heap = rows.map((row, i) => {
+            const layer = Math.floor(i / 2);
+            const spot = {
+              x: (rand() - 0.5) * 120 + ((i % 2) - 0.5) * 60,
+              y: 1700 - layer * 88 - rand() * 24,
+              r: (rand() - 0.5) * 16,
+            };
+            const at = (fallFrom + fallSpan * Math.sqrt(i / cards)) * dur;
+            tl.fromTo(row, { x: spot.x + (rand() - 0.5) * 400, y: -700 - rand() * 200, rotation: spot.r * 4 },
+              { x: spot.x, y: spot.y, rotation: spot.r, duration: 0.5, ease: "bounce.out" }, at);
+            return spot;
+          });
+
+          const count = { n: 0 };
+          const n = document.getElementById("burocracia-n");
+          tl.to(count, {
+            n: EVENTS_IN_OBRA, duration: fallSpan * dur, ease: "power2.in",
+            onUpdate: () => { n.textContent = Math.round(count.n); },
+          }, fallFrom * dur);
+
+          const messages = [
+            "O eSocial rejeitou o evento.",
+            "O campo CPF está em um formato inválido.",
+            "O certificado digital é inválido ou expirou.",
+            "A folha deste período já está fechada no eSocial.",
+          ];
+          const toasts = document.getElementById("burocracia-toasts");
+          const hit = [22, 19, 21, 18];
+          messages.forEach((message, k) => {
+            const toast = document.createElement("div");
+            toast.className = "toast error";
+            toast.id = `burocracia-toast-${k}`;
+            toast.style.top = `${620 + k * 150}px`;
+            toast.style.left = `${70 + (k % 2) * 60}px`;
+            toast.innerHTML = `<span class="x">✕</span><span>${message}</span>`;
+            toasts.appendChild(toast);
+            const at = ERRORS_AT[k] * dur;
+            tl.fromTo(toast, { opacity: 0, x: -140, scale: 0.9 },
+              { opacity: 1, x: 0, scale: 1, duration: 0.35, ease: "back.out(2)" }, at);
+            const stamp = rows[hit[k]].querySelector(".stamp");
+            tl.fromTo(stamp, { opacity: 0, scale: 1.8 }, { opacity: 1, scale: 1, duration: 0.2, ease: "power3.in" }, at + 0.05);
+            tl.to(box, { x: 14, duration: 0.05, yoyo: true, repeat: 3, ease: "none" }, at + 0.05);
+          });
+
+          const collapse = collapseAt * dur;
+          tl.to("#burocracia-count", { opacity: 0, duration: 0.25 }, collapse - 0.3);
+          rows.forEach((row, i) => {
+            tl.to(row, { y: 2300, rotation: heap[i].r * 6 + (rand() - 0.5) * 60, duration: 0.7, ease: "power3.in" },
+              collapse + (i % 6) * 0.03);
+          });
+          tl.to("#burocracia-toasts .toast", { y: 1500, rotation: 12, duration: 0.7, ease: "power3.in", stagger: 0.04 }, collapse);
+
+          B.camera(tl, "burocracia", zoom, dur);
+          window.__timelines["burocracia"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

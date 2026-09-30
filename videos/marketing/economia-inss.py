@@ -7,6 +7,7 @@ Render:
 Preview while editing scenes (after one render wrote index.html):
   cd videos/marketing/economia-inss-scenes && npx hyperframes@0.8.85 preview
 """
+import math
 import os
 from pathlib import Path
 
@@ -15,10 +16,12 @@ from engine import VERTICAL, Beat, Storyboard, build
 from themes.legalizaobra import HF_THEME, TEAL, WHITE
 
 SCENES = Path(__file__).resolve().parent / "economia-inss-scenes"
-APP_CLIPS = ["01-obra-andrade", "02-esocial-envio", "03-darf", "07-simulacao"]
+APP_CLIPS = ["02-esocial-envio", "03-darf", "07-simulacao"]
 SIMULACAO_CLICK, SIMULACAO_RESULT = 6.78, 7.73
 ESOCIAL_CLICK, ESOCIAL_CONFIRM, ESOCIAL_DONE = 6.75, 9.72, 11.53
 DARF_CONFIRM, DARF_DONE = 9.92, 11.8
+PILE = {"cards": 23, "fallFrom": 0.06, "fallSpan": 0.46, "errorsAt": (0.72, 0.77, 0.82, 0.87), "collapseAt": 0.93}
+CARD_LANDS_AFTER = 0.18
 VOICEOVER = {"voice": "nPczCjzI2devNBz1zQrb", "model": "eleven_v3", "settings": {"stability": 0.5, "speed": 1.08}}
 
 sb = Storyboard()
@@ -30,56 +33,65 @@ def clip(scene_id: str, clip_seconds: float) -> float:
     return app_clips.scene_time(SCENES, scene_id, clip_seconds)
 
 
+def pile_landings() -> list[Beat]:
+    return [Beat(PILE["fallFrom"] + PILE["fallSpan"] * math.sqrt(i / PILE["cards"]), CARD_LANDS_AFTER)
+            for i in range(PILE["cards"])]
+
+
 scene(
     id="hook", effect="slowpunch", min_dur=2.6,
     narration="[excited] Quanto de INSS a sua obra vai pagar?",
-    sfx=[("whoosh", 0.1), ("boom", 0.45)],
+    sfx=[("impact", 0.4)],
 )
 scene(
     id="problem", min_dur=5.0,
-    narration="Sem planejamento, o INSS sai pela área construída. "
-              "Numa casa de 240 metros em São Paulo: 81 mil reais.",
-    sfx=[("tick", 0.4), ("drumroll", Beat(0.2)), ("boom", Beat(0.2, 1.6)), ("uhoh", Beat(0.55, 0.1))],
+    narration="Sem planejamento, o INSS sai pela área construída: "
+              "81 mil reais, numa casa de 240 metros.",
+    sfx=[("drumroll", Beat(0.2)), ("impact", Beat(0.2, 1.6)), ("swoosh", -0.3)],
 )
-flash(TEAL, 0.066, sfx=[("tick", 0.0)])
+flash(TEAL, 0.066)
 scene(
     id="meet", effect="punch", min_dur=3.2,
     narration="[excited] Com a Legaliza Obra, você paga menos. Dentro da lei.",
-    sfx=[("airhorn", 0.05), ("ok", Beat(0.55, 0.1))],
+    sfx=[("airhorn", 0.05)],
 )
 scene(
     id="simulacao", min_dur=5.0,
     narration="Você informa os dados da obra... e vê o resultado na hora.",
-    sfx=[("whoosh", 0.2), ("tick", clip("simulacao", SIMULACAO_CLICK)), ("ding", clip("simulacao", SIMULACAO_RESULT))],
+    sfx=[("click", clip("simulacao", SIMULACAO_CLICK)), ("ding", clip("simulacao", SIMULACAO_RESULT))],
 )
 scene(
     id="economia", effect="slowpunch", min_dur=5.5,
     narration="Nessa obra, o INSS cai de 81 para 47 mil. "
               "[excited] Quase 34 mil de economia!",
-    sfx=[("tick", 0.2), ("tick", 0.4), ("type", Beat(0.25)), ("ok", Beat(0.25, 1.1)),
-         ("riser", Beat(0.5)), ("success", Beat(0.5, 1.2))],
+    sfx=[("fall", Beat(0.25)), ("riser", Beat(0.5, -0.3)), ("cash", Beat(0.5, 1.2)), ("swoosh", -0.3)],
 )
-flash(WHITE, 0.066, sfx=[("tick", 0.0)])
+flash(WHITE, 0.066)
 scene(
-    id="obra", min_dur=4.5,
-    narration="Cada obra fica num só lugar: pedreiros, folha e o INSS de cada mês.",
-    sfx=[("whoosh", 0.2)],
+    id="burocracia", min_dur=11.0,
+    vars={**PILE, "errorsAt": ",".join(map(str, PILE["errorsAt"]))},
+    narration="Mas pra pagar menos, a obra tem que estar em dia no eSocial. Todo mês. "
+              "São 80 envios numa obra só. Um campo errado? Rejeitado.",
+    sfx=[*[("thud", beat) for beat in pile_landings()],
+         *[("buzz", Beat(at, 0.05)) for at in PILE["errorsAt"]],
+         ("crash", Beat(PILE["collapseAt"], 0.05))],
 )
+flash(TEAL, 0.066)
 scene(
-    id="esocial", min_dur=6.0,
-    narration="Um clique envia a obra para o eSocial.",
-    sfx=[("whoosh", 0.2), ("tick", clip("esocial", ESOCIAL_CLICK)), ("tick", clip("esocial", ESOCIAL_CONFIRM)),
+    id="esocial", effect="punch", min_dur=6.0,
+    narration="[excited] A Legaliza Obra faz tudo isso por você. Um clique, e a obra está no eSocial.",
+    sfx=[("impact", 0.0), ("click", clip("esocial", ESOCIAL_CLICK)), ("click", clip("esocial", ESOCIAL_CONFIRM)),
          ("success", clip("esocial", ESOCIAL_DONE))],
 )
 scene(
     id="darf", min_dur=4.8,
-    narration="E todo mês, a guia DARF sai pronta. Sem planilha.",
-    sfx=[("whoosh", 0.2), ("tick", clip("darf", DARF_CONFIRM)), ("success", clip("darf", DARF_DONE))],
+    narration="E com a transmissão automática, a guia DARF de todo mês chega pronta no seu e-mail.",
+    sfx=[("click", clip("darf", DARF_CONFIRM)), ("success", clip("darf", DARF_DONE))],
 )
 scene(
     id="cta", effect="slowpunch", min_dur=5.0, blend=0.5,
-    narration="[excited] Calcule grátis o INSS da sua obra em legalizaobra ponto com.",
-    sfx=[("ding2", Beat(0.35, 0.15))],
+    narration="[excited] Simule grátis o INSS da sua obra, na calculadora da Legaliza Obra.",
+    sfx=[("swoosh", 0.0), ("ding2", Beat(0.35, 0.15))],
 )
 
 

@@ -32,6 +32,8 @@ Read [README.md](README.md) first for setup and the build commands.
 
 **Sound effects follow the picture.**
 - Every `sfx` sits on a visible event. Use `Beat(fraction, delay)` for the scene's GSAP beats and `app_clips.scene_time(...)` for app-clip events, measured from the clip.
+- When a scene and its sounds share timings, pass them with `scene(vars={...})` rather than writing them twice.
+- Use sounds for the moments that matter: clicks, reveals, errors, money. Use `swoosh` into a cut. Put no sound on routine entrances.
 - After a render, check the sounds against frames taken at each sfx time.
 - README → Sound effects has the details.
 
@@ -66,6 +68,7 @@ The source of truth is the frontend: `app/globals.css` (tokens), `app/layout.tsx
 | Background / surface | `#FFFFFF` / `#F5F8F7` |
 | Text | `#141414` |
 | Warning (the "cost is high" number only) | `#DC8F1F` |
+| Danger (eSocial errors and rejections only) | `#B42318` on `#FEF1F0` |
 
 - Teal is the brand. A teal stage takes white headlines, `#CFE3DF` sublines and mint highlights, like the site's hero.
 - Use only the solid colours above. No gradients, and don't add new hues.

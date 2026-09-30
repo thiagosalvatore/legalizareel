@@ -6,7 +6,7 @@ The default output is a vertical 1080×1920 reel in Brazilian Portuguese, for In
 
 This repo is a fork of PostHog's [hogreel](https://github.com/PostHog/hogreel). It keeps the engine. The theme, assets and videos are new.
 
-Videos so far: [`marketing/economia-inss`](videos/marketing/economia-inss.py), a 48 s reel that sells the INSS savings with real app footage. For a new video, copy it.
+Videos so far: [`marketing/economia-inss`](videos/marketing/economia-inss.py), a 53 s reel. It shows the INSS savings, then the eSocial work that piles up and gets rejected, then the app doing it in one click, with real app footage. For a new video, copy it.
 
 ## Quick start
 
@@ -132,6 +132,7 @@ A storyboard hands its visuals to HyperFrames with `build(sb, ..., hyperframes=<
   - It reads its final length from the `dur` variable. Beats land at a fraction of the scene, so they still line up whatever the soundtrack makes the scene's length.
 - The scene's `effect` arrives as the `zoom` variable. Every scene ends with `window.brand.camera(tl, "<id>", zoom, dur)`: a slow push on the stage while the logo holds still.
 - `scene(..., blend=0.5)` cross-fades into that scene instead of cutting.
+- `scene(..., vars={...})` hands extra values to the scene's composition variables. Declare them in the composition's `data-composition-variables`. Use this when the storyboard also needs a value, such as the beat times for sounds. Then the value is written once, in the storyboard. `burocracia` gets its pile timings this way.
 - The engine writes the root `index.html`, renders silently with the pinned CLI, and muxes the audio on top.
 - `assets/` and the theme files are symlinked into the project at render time. That's why scenes use `assets/...` paths and the classes in `themes/legalizaobra.css`.
 
@@ -193,7 +194,17 @@ ffmpeg -i assets/app/02-esocial-envio.mp4 -vf "scale=270:-1,select='gt(scene,0.0
 A click shows up as the change it causes, such as a dialog opening or a loading state. Re-measure after re-recording a clip, because each recording's timing moves a little.
 
 
-- The generated sounds are in `engine.gen_sfx()`: `ding`, `tick`, `boom`, `airhorn`, `success`, `riser`, `drumroll` and more.
+- The generated sounds are in `engine.gen_sfx()`:
+  - `click` for a real cursor click in app footage.
+  - `thud` for a card landing.
+  - `swoosh` to lead into a cut. Place it at `-0.3` on the scene before the cut.
+  - `impact` for a big reveal.
+  - `crash` for something collapsing.
+  - `buzz` for an error or rejection.
+  - `cash` for money landing.
+  - `fall` for a number dropping.
+  - The older chiptune set: `ding`, `success`, `airhorn`, `riser`, `drumroll` and others.
+- Skip sounds on entrances that don't matter, like a card sliding in or a screen rising. A sound on every movement becomes noise.
 - To reuse a real sound, cut it with `sb.sound("name", "path/to/file.m4a", start, end, fade_in=..., fade_out=...)`. Then use `"name"` in `sfx` like any other sound.
 - The music bed fades out over the last scene.
 
