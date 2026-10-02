@@ -77,7 +77,7 @@ flash(TEAL, 0.066)
 scene(
     id="fluxo", effect="punch", min_dur=5.5, vars=scene_vars(FLUXO),
     narration="[excited] Na Legaliza Obra, a simulação vira orçamento, contrato e obra. Sem redigitar nada.",
-    sfx=[("airhorn", 0.05), *[("tick", Beat(at)) for at in FLUXO["stepsAt"]]],
+    sfx=[("tick", Beat(at)) for at in FLUXO["stepsAt"]],
 )
 scene(
     id="orcamento", min_dur=7.3, vars={**ORCAMENTO, "cutsAt": cuts_at("orcamento")},
@@ -117,7 +117,7 @@ scene(
 )
 scene(
     id="cta", effect="slowpunch", min_dur=5.0, blend=0.5,
-    narration="[excited] Conheça os planos da Legaliza Obra, em legalizaobra ponto com barra preços.",
+    narration="[excited] Conheça os planos da Legaliza Obra",
     sfx=[("swoosh", 0.0), ("ding2", Beat(0.35, 0.15))],
 )
 
