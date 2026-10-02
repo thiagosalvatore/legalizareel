@@ -1,0 +1,63 @@
+<!doctype html>
+<html data-composition-variables='[{"id":"dur","type":"number","label":"Scene length (s)","default":6},{"id":"zoom","type":"number","label":"Camera push (1 = none)","default":1},{"id":"beforeMinutes","type":"number","label":"Minutes it took before","default":120},{"id":"afterMinutes","type":"number","label":"Minutes it takes now","default":5},{"id":"strikeAt","type":"number","label":"Before is struck through (fraction)","default":0.25},{"id":"nowAt","type":"number","label":"Now counter starts (fraction)","default":0.35},{"id":"checksAt","type":"string","label":"Each step checks (fractions)","default":"0.62,0.67,0.72"},{"id":"lineAt","type":"number","label":"Closing line (fraction)","default":0.78}]'>
+  <body>
+    <template id="resumo-template">
+      <style>
+        #resumo-root { position: absolute; inset: 0; }
+        #resumo-cards { display: flex; flex-direction: column; gap: 32px; width: 900px; text-align: left; }
+        #resumo-before .value { position: relative; width: fit-content; color: var(--warning); }
+        #resumo-strike { position: absolute; left: -10px; right: -10px; top: 52%; height: 8px; border-radius: 4px; background: var(--ink); transform-origin: left center; }
+        #resumo-checks { display: flex; gap: 20px; }
+        #resumo-checks .status { font-size: 34px; padding: 10px 26px 10px 12px; }
+        #resumo-checks .check { width: 52px; height: 52px; font-size: 28px; }
+      </style>
+      <div id="resumo-root" data-composition-id="resumo" data-width="1080" data-height="1920">
+        <div class="stage brand">
+          <div class="logo-pill" id="resumo-logo"><img src="assets/brand/logo.png" alt="Legaliza Obra" /></div>
+          <div class="center">
+            <div id="resumo-cards">
+              <div class="card" id="resumo-before">
+                <div class="label">Antes</div>
+                <div class="value"><span id="resumo-before-value"></span><div id="resumo-strike"></div></div>
+              </div>
+              <div class="card mint" id="resumo-after">
+                <div class="label">Com a Legaliza Obra</div>
+                <div class="value" id="resumo-after-value"></div>
+              </div>
+            </div>
+            <div id="resumo-checks">
+              <span class="status done"><span class="check">✓</span>Orçamento</span>
+              <span class="status done"><span class="check">✓</span>Contrato</span>
+              <span class="status done"><span class="check">✓</span>Obra</span>
+            </div>
+            <div class="big s64" id="resumo-line">Digitou uma vez. <span class="hl">Usou em tudo.</span></div>
+          </div>
+        </div>
+      </div>
+      <script>
+        (() => {
+          const { dur, zoom, beforeMinutes, afterMinutes, strikeAt, nowAt, checksAt, lineAt } = window.__hyperframes.getVariables();
+          const tl = gsap.timeline({ paused: true });
+          const B = window.brand;
+          const CHECKS_AT = String(checksAt).split(",").map(Number);
+          const MINUTES_IN_HOUR = 60;
+          const duration = (minutes) => minutes % MINUTES_IN_HOUR === 0
+            ? `${minutes / MINUTES_IN_HOUR} horas` : `${minutes} minutos`;
+
+          document.getElementById("resumo-before-value").textContent = duration(beforeMinutes);
+          B.fadeIn(tl, "#resumo-logo");
+          B.upIn(tl, "#resumo-before", 0.1);
+          tl.fromTo("#resumo-strike", { scaleX: 0 }, { scaleX: 1, duration: 0.3, ease: "power2.out" }, strikeAt * dur);
+          B.upIn(tl, "#resumo-after", nowAt * dur - 0.3);
+          B.counter(tl, "#resumo-after-value", afterMinutes, nowAt * dur, 1.2, beforeMinutes, (n) => `${n} minutos`);
+          document.querySelectorAll("#resumo-checks .status").forEach((check, i) => {
+            B.popIn(tl, check, CHECKS_AT[i] * dur);
+          });
+          B.upIn(tl, "#resumo-line", lineAt * dur);
+          B.camera(tl, "resumo", zoom, dur);
+          window.__timelines["resumo"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

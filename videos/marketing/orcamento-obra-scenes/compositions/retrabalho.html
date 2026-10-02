@@ -1,0 +1,86 @@
+<!doctype html>
+<html data-composition-variables='[{"id":"dur","type":"number","label":"Scene length (s)","default":8.5},{"id":"zoom","type":"number","label":"Camera push (1 = none)","default":1},{"id":"typeAt","type":"string","label":"Each window starts typing (fractions)","default":"0.06,0.27,0.48,0.66"},{"id":"cps","type":"number","label":"Typed characters per second","default":16},{"id":"typoAt","type":"number","label":"The typo turns red (fraction)","default":0.86}]'>
+  <body>
+    <template id="retrabalho-template">
+      <style>
+        #retrabalho-root { position: absolute; inset: 0; }
+        #retrabalho-head { position: absolute; top: 250px; left: 0; right: 0; z-index: 50; gap: 28px; }
+        #retrabalho-count { font-size: 44px; }
+        #retrabalho-count b { font-family: var(--display); font-weight: 400; font-size: 64px; color: var(--teal); }
+        #retrabalho-windows .window { z-index: 20; }
+        #retrabalho-windows .input .err {
+          display: none; margin-left: auto; place-items: center; width: 52px; height: 52px; border-radius: 50%;
+          background: var(--danger); color: var(--white); font-size: 28px; font-weight: 800;
+        }
+        #retrabalho-windows .input.error .err { display: grid; }
+      </style>
+      <div id="retrabalho-root" data-composition-id="retrabalho" data-width="1080" data-height="1920">
+        <div class="stage light">
+          <img class="logo" id="retrabalho-logo" src="assets/brand/logo.png" alt="Legaliza Obra" />
+          <div class="center" id="retrabalho-head">
+            <div class="big s96" id="retrabalho-title">Tudo de novo, <span class="hl">à mão</span></div>
+            <div class="badge" id="retrabalho-count"><b id="retrabalho-n">0</b>× o mesmo nome</div>
+          </div>
+          <div id="retrabalho-windows"></div>
+        </div>
+      </div>
+      <script>
+        (() => {
+          const { dur, zoom, typeAt, cps, typoAt } = window.__hyperframes.getVariables();
+          const tl = gsap.timeline({ paused: true });
+          const B = window.brand;
+          const TYPE_AT = String(typeAt).split(",").map(Number);
+          const NAME = "Maria Ferreira";
+          const TYPO = "Maria Fereira";
+          const WINDOW_GAP = 240;
+          const FIRST_TOP = 560;
+
+          const copies = [
+            ["Planilha de clientes.xlsx", "Cliente", 70, -1.5],
+            ["Orçamento.docx", "Nome do cliente", 150, 1.2],
+            ["Contrato.docx", "Contratante", 90, -1],
+            ["Cadastro da obra", "Proprietário da obra", 170, 1.5],
+          ];
+          const box = document.getElementById("retrabalho-windows");
+          const windows = copies.map(([title, label, left, tilt], i) => {
+            const win = document.createElement("div");
+            win.className = "window";
+            win.id = `retrabalho-window-${i}`;
+            win.style.top = `${FIRST_TOP + i * WINDOW_GAP}px`;
+            win.style.left = `${left}px`;
+            win.innerHTML = `<div class="bar"><i></i><i></i><i></i><span>${title}</span></div>` +
+              `<div class="body"><div class="field"><div class="label">${label}</div>` +
+              `<div class="input"><span class="typed"></span><span class="caret"></span><span class="err">✕</span></div></div></div>`;
+            box.appendChild(win);
+            return { win, tilt };
+          });
+
+          B.fadeIn(tl, "#retrabalho-logo");
+          B.upIn(tl, "#retrabalho-title", 0.05);
+          B.popIn(tl, "#retrabalho-count", 0.3);
+
+          windows.forEach(({ win, tilt }, i) => {
+            const at = TYPE_AT[i] * dur;
+            const isLast = i === windows.length - 1;
+            const caret = win.querySelector(".caret");
+            tl.fromTo(win, { opacity: 0, y: 160, rotation: 0 },
+              { opacity: 1, y: 0, rotation: tilt, duration: 0.45, ease: "back.out(1.6)" }, at - 0.2);
+            tl.fromTo(caret, { opacity: 0 }, { opacity: 1, duration: 0.01 }, at);
+            B.typeText(tl, win.querySelector(".typed"), isLast ? TYPO : NAME, at + 0.15, cps);
+            B.counter(tl, "#retrabalho-n", i + 1, at + 0.15, 0.2, i, String);
+            if (!isLast) tl.to(caret, { opacity: 0, duration: 0.01 }, TYPE_AT[i + 1] * dur);
+          });
+
+          const typo = typoAt * dur;
+          const last = windows[windows.length - 1].win;
+          tl.set(last.querySelector(".input"), { className: "input error" }, typo);
+          tl.to(last.querySelector(".caret"), { opacity: 0, duration: 0.01 }, typo);
+          tl.to(last, { x: 16, duration: 0.05, yoyo: true, repeat: 5, ease: "none" }, typo);
+
+          B.camera(tl, "retrabalho", zoom, dur);
+          window.__timelines["retrabalho"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

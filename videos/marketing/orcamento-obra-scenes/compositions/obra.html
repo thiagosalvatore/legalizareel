@@ -1,0 +1,40 @@
+<!doctype html>
+<html data-composition-variables='[{"id":"dur","type":"number","label":"Scene length (s)","default":6.8},{"id":"zoom","type":"number","label":"Camera push (1 = none)","default":1},{"id":"cutsAt","type":"string","label":"Cuts in the clip (s)","default":"3.15,3.7"}]'>
+  <body>
+    <template id="obra-template">
+      <style>
+        #obra-root { position: absolute; inset: 0; }
+        #obra-head { position: absolute; top: 250px; left: 0; right: 0; z-index: 40; }
+        #obra-screen { top: 520px; }
+      </style>
+      <div id="obra-root" data-composition-id="obra" data-width="1080" data-height="1920">
+        <div class="stage light">
+          <img class="logo" id="obra-logo" src="assets/brand/logo.png" alt="Legaliza Obra" />
+          <div class="center" id="obra-head">
+            <div class="big s80">A obra sai <span class="hl">do orçamento</span></div>
+          </div>
+          <div class="screen" id="obra-screen">
+            <video id="obra-video" class="clip" src="assets/app/obra-cut.mp4" data-start="0" data-media-start="0" muted playsinline></video>
+          </div>
+        </div>
+      </div>
+      <script>
+        (() => {
+          const { dur, zoom, cutsAt } = window.__hyperframes.getVariables();
+          const tl = gsap.timeline({ paused: true });
+          const B = window.brand;
+          const lastCut = String(cutsAt).split(",").map(Number).at(-1);
+          B.fadeIn(tl, "#obra-logo");
+          B.upIn(tl, "#obra-head", 0.1);
+          B.floatIn(tl, "#obra-screen", 0.1);
+          tl.set("#obra-video", { scale: 1.06, x: -70, y: 0 }, 0);
+          tl.to("#obra-video", { scale: 2, x: -470, y: -1050, duration: 0.6, ease: "power2.inOut" }, 0.2);
+          tl.set("#obra-video", { scale: 1.4, x: -55, y: 0 }, lastCut);
+          tl.fromTo("#obra-screen", { scale: 1.04 }, { scale: 1, duration: 0.25, ease: "power2.out" }, lastCut);
+          B.camera(tl, "obra", zoom, dur);
+          window.__timelines["obra"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

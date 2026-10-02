@@ -7,7 +7,7 @@ Read [README.md](README.md) first for setup and the build commands.
 
 - `engine.py`: the **brand-agnostic** pipeline. It times the scenes, reads the narration (ElevenLabs take, or Kokoro / edge-tts / `say` per line), times the scenes to a song, and generates the SFX and music bed. Then it writes the root HyperFrames `index.html`, renders, and muxes. Never put brand or story specifics here.
 - `themes/legalizaobra.{css,js,py}`: the **brand layer**. The CSS holds fonts, palette, stage variants and blocks. `window.brand` holds the motion helpers. The Python file holds the palette constants and `HF_THEME`. The whole Legaliza Obra look lives here.
-- `videos/<team>/<name>.py`: one **story**. It is a `Storyboard` of `scene()`/`flash()` calls handed to `engine.build()`, with its HyperFrames project in `videos/<team>/<name>-scenes/compositions/<scene id>.html`. `marketing/economia-inss` is the reference.
+- `videos/<team>/<name>.py`: one **story**. It is a `Storyboard` of `scene()`/`flash()` calls handed to `engine.build()`, with its HyperFrames project in `videos/<team>/<name>-scenes/compositions/<scene id>.html`. `marketing/economia-inss` is the reference. `marketing/orcamento-obra` shows animated product scenes and cut footage.
 - `app_clips.py`: copies app recordings from the frontend's recorder into `assets/app/` (git-ignored). A storyboard lists the clips it uses and calls `app_clips.ensure([...])` in `main()`.
 - `build.py`: the dispatcher. `python build.py <team>/<name>` (default `marketing/economia-inss`).
 

@@ -1,0 +1,46 @@
+<!doctype html>
+<html data-composition-variables='[{"id":"dur","type":"number","label":"Scene length (s)","default":3},{"id":"zoom","type":"number","label":"Camera push (1 = none)","default":1}]'>
+  <body>
+    <template id="hook-template">
+      <style>
+        #hook-root { position: absolute; inset: 0; }
+        #hook-clock {
+          position: relative; width: 220px; height: 220px; border-radius: 50%;
+          border: 12px solid var(--mint-2); background: rgba(255, 255, 255, .08);
+        }
+        #hook-clock .hand {
+          position: absolute; left: 50%; bottom: 50%; width: 12px; margin-left: -6px;
+          border-radius: 6px; background: var(--white); transform-origin: 50% 100%;
+        }
+        #hook-clock #hook-minute { height: 82px; }
+        #hook-clock #hook-hour { height: 54px; background: var(--mint-2); }
+      </style>
+      <div id="hook-root" data-composition-id="hook" data-width="1080" data-height="1920">
+        <div class="stage deep">
+          <img class="photo" id="hook-photo" src="assets/brand/obra-em-construcao.webp" alt="" />
+          <div class="shade"></div>
+          <div class="logo-pill" id="hook-logo"><img src="assets/brand/logo.png" alt="Legaliza Obra" /></div>
+          <div class="center">
+            <div id="hook-clock"><div class="hand" id="hook-hour"></div><div class="hand" id="hook-minute"></div></div>
+            <div class="big s110" id="hook-q">Quanto tempo você perde com <span class="hl">orçamento e contrato?</span></div>
+          </div>
+        </div>
+      </div>
+      <script>
+        (() => {
+          const { dur, zoom } = window.__hyperframes.getVariables();
+          const tl = gsap.timeline({ paused: true });
+          const B = window.brand;
+          tl.fromTo("#hook-photo", { scale: 1.12 }, { scale: 1, duration: dur, ease: "none" }, 0);
+          B.fadeIn(tl, "#hook-logo");
+          B.popIn(tl, "#hook-clock", 0.05);
+          tl.fromTo("#hook-minute", { rotation: 0 }, { rotation: 1080, duration: dur, ease: "power1.in" }, 0);
+          tl.fromTo("#hook-hour", { rotation: 60 }, { rotation: 150, duration: dur, ease: "power1.in" }, 0);
+          B.upIn(tl, "#hook-q", 0.15);
+          B.camera(tl, "hook", zoom, dur);
+          window.__timelines["hook"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>
