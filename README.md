@@ -107,6 +107,13 @@ In a scene, a clip goes in a `.screen` frame:
 - `scale: 1.06, x: -70` hides the app's sidebar rail.
 - `scale: 1.8, x: -394, y: -925` centres a dialog in the middle of the app.
 
+A recording often waits on something the reel should not show, such as a page that compiles in dev. To drop those stretches, cut the clip:
+
+- The storyboard lists the `(start, end)` seconds to keep, and `main()` calls `app_clips.cut("<clip>", segments, "<scene>-cut")`. That writes `assets/app/<scene>-cut.mp4`, and the scene plays it with one `<video>`.
+- `app_clips.cut_time(segments, t)` turns a moment in the recording into a moment in the cut, for sounds.
+- `app_clips.cut_points(segments)` gives the seconds where each later segment starts. Pass them to the scene in `vars`, so the scene can reframe the video at each cut.
+- Don't put two `<video>`s with the same `src` in one scene. HyperFrames does not seek them separately, and one of them freezes.
+
 ## Build
 
 ```bash
