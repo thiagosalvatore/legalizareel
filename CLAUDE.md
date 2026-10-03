@@ -22,6 +22,7 @@ Read [README.md](README.md) first for setup and the build commands.
 **App footage** comes from the frontend repo's `mock-backend/recording/` (Playwright, 1080×1920, fake cursor, mock data). README → App footage has the commands.
 - Frame a clip in `.screen` and animate the `<video>` (`x`, `y`, `scale`, origin at its top-left corner) to pan and zoom onto the moment that matters.
 - Never animate `y` on a `.screen`'s children from a theme helper: it fights the video's own pan.
+- To skip a slow stretch of a recording, cut it with `app_clips.cut(...)` in the storyboard (README → App footage). Never put two `<video>`s with the same `src` in one scene: HyperFrames does not seek them separately.
 - If the recorder fails, fix the frontend's mock backend or recorder in a PR on the frontend repo. Do not work around it here.
 
 **Rendering:**
