@@ -18,15 +18,44 @@ window.brand = {
       { opacity: 1, y: 0, duration: 0.8, ease: "back.out(1.2)" }, at);
   },
 
-  counter(tl, el, to, at, duration = 1.2, from = 0) {
+  counter(tl, el, to, at, duration = 1.2, from = 0, format = window.brand.brl) {
     const node = document.querySelector(el);
-    const brl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
     const value = { n: from };
-    node.textContent = brl.format(from);
+    node.textContent = format(from);
     tl.to(value, {
       n: to, duration, ease: "power2.out",
-      onUpdate: () => { node.textContent = brl.format(Math.round(value.n)); },
+      onUpdate: () => { node.textContent = format(Math.round(value.n)); },
     }, at);
+  },
+
+  brl(n) {
+    return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 }).format(n);
+  },
+
+  typeText(tl, el, text, at, cps = 16) {
+    const node = typeof el === "string" ? document.querySelector(el) : el;
+    const typed = { n: 0 };
+    const duration = text.length / cps;
+    node.textContent = "";
+    tl.to(typed, {
+      n: text.length, duration, ease: "none",
+      onUpdate: () => { node.textContent = text.slice(0, Math.round(typed.n)); },
+    }, at);
+    return at + duration;
+  },
+
+  swapText(tl, el, at) {
+    const swap = typeof el === "string" ? document.querySelector(el) : el;
+    const [from, to] = swap.children;
+    tl.set(swap, { width: from.offsetWidth }, 0);
+    tl.set(to, { scaleY: 0 }, 0);
+    tl.to(from, { scaleY: 0, duration: 0.14, ease: "power2.in" }, at);
+    tl.to(swap, { width: to.offsetWidth, duration: 0.3, ease: "power2.out" }, at + 0.14);
+    tl.to(to, { scaleY: 1, duration: 0.3, ease: "back.out(2.4)" }, at + 0.14);
+  },
+
+  drawLine(tl, el, at, duration = 0.35) {
+    tl.fromTo(el, { scaleY: 0 }, { scaleY: 1, duration, ease: "power2.out" }, at);
   },
 
   camera(tl, scene, zoom, dur) {

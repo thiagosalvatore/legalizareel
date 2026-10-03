@@ -1,0 +1,51 @@
+<!doctype html>
+<html data-composition-variables='[{"id":"dur","type":"number","label":"Scene length (s)","default":5.5},{"id":"zoom","type":"number","label":"Camera push (1 = none)","default":1},{"id":"swapsAt","type":"string","label":"Each field fills in (fractions)","default":"0.3,0.42,0.56,0.68"},{"id":"readyAt","type":"number","label":"Ready badge pops (fraction)","default":0.82}]'>
+  <body>
+    <template id="modelo-template">
+      <style>
+        #modelo-root { position: absolute; inset: 0; }
+        #modelo-head { position: absolute; top: 250px; left: 0; right: 0; z-index: 40; }
+        #modelo-doc { position: absolute; top: 470px; left: 100px; z-index: 30; }
+        #modelo-ready { position: absolute; top: 1400px; left: 0; right: 0; margin: 0 auto; width: fit-content; z-index: 45; box-shadow: 0 20px 40px rgba(16, 44, 41, .2); }
+      </style>
+      <div id="modelo-root" data-composition-id="modelo" data-width="1080" data-height="1920">
+        <div class="stage light">
+          <img class="logo" id="modelo-logo" src="assets/brand/logo.png" alt="Legaliza Obra" />
+          <div class="center" id="modelo-head">
+            <div class="big s80">Seu modelo, <span class="hl">preenchido</span></div>
+          </div>
+          <div class="doc" id="modelo-doc">
+            <h3>Contrato de empreitada</h3>
+            <p><b>CONTRATANTE:</b> <span class="swap" id="modelo-nome"><span class="var">{{nome_cliente}}</span><span class="val">Maria Ferreira</span></span>,
+              CPF <span class="swap" id="modelo-cpf"><span class="var">{{documento_cliente}}</span><span class="val">987.654.321-00</span></span>.</p>
+            <p><b>CONTRATADA:</b> Construtora Horizonte Ltda.</p>
+            <div class="rule"></div>
+            <div class="rule short"></div>
+            <p><b>Valor:</b> <span class="swap" id="modelo-valor"><span class="var">{{valor}}</span><span class="val">R$ 18.500,00</span></span></p>
+            <div class="rule"></div>
+            <div class="rule short"></div>
+            <p>São Paulo, <span class="swap" id="modelo-data"><span class="var">{{data_atual}}</span><span class="val">22 de setembro de 2026</span></span>.</p>
+          </div>
+          <div class="status done" id="modelo-ready"><span class="check">✓</span>Pronto para assinar</div>
+        </div>
+      </div>
+      <script>
+        (() => {
+          const { dur, zoom, swapsAt, readyAt } = window.__hyperframes.getVariables();
+          const tl = gsap.timeline({ paused: true });
+          const B = window.brand;
+          const SWAPS_AT = String(swapsAt).split(",").map(Number);
+          B.fadeIn(tl, "#modelo-logo");
+          B.upIn(tl, "#modelo-head", 0.05);
+          B.floatIn(tl, "#modelo-doc", 0.15);
+          ["#modelo-nome", "#modelo-cpf", "#modelo-valor", "#modelo-data"].forEach((field, i) => {
+            B.swapText(tl, field, SWAPS_AT[i] * dur);
+          });
+          B.popIn(tl, "#modelo-ready", readyAt * dur);
+          B.camera(tl, "modelo", zoom, dur);
+          window.__timelines["modelo"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

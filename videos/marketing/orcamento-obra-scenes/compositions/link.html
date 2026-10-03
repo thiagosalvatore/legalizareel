@@ -1,0 +1,51 @@
+<!doctype html>
+<html data-composition-variables='[{"id":"dur","type":"number","label":"Scene length (s)","default":6},{"id":"zoom","type":"number","label":"Camera push (1 = none)","default":1},{"id":"copyAt","type":"number","label":"Link copied (fraction)","default":0.12},{"id":"flyAt","type":"number","label":"Link flies into the phone (fraction)","default":0.24},{"id":"badgeAt","type":"number","label":"Badge pops (fraction)","default":0.6}]'>
+  <body>
+    <template id="link-template">
+      <style>
+        #link-root { position: absolute; inset: 0; }
+        #link-head { position: absolute; top: 250px; left: 0; right: 0; z-index: 40; }
+        #link-url {
+          position: absolute; top: 400px; left: 0; right: 0; margin: 0 auto; width: fit-content; z-index: 50;
+          display: flex; align-items: center; gap: 22px; padding: 18px 18px 18px 36px; border-radius: 999px;
+          background: var(--white); border: 1px solid var(--divider); box-shadow: 0 24px 48px rgba(16, 44, 41, .18);
+          font-size: 32px; font-weight: 500; color: var(--ink);
+        }
+        #link-copy { padding: 12px 26px; border-radius: 999px; background: var(--teal); color: var(--white); font-weight: 600; }
+        #link-copy .swap > * { white-space: nowrap; }
+        #link-screen { top: 520px; }
+        #link-badge { position: absolute; top: 1390px; left: 0; right: 0; margin: 0 auto; width: fit-content; z-index: 45; font-size: 40px; box-shadow: 0 20px 40px rgba(16, 44, 41, .2); }
+      </style>
+      <div id="link-root" data-composition-id="link" data-width="1080" data-height="1920">
+        <div class="stage surface">
+          <img class="logo" id="link-logo" src="assets/brand/logo.png" alt="Legaliza Obra" />
+          <div class="center" id="link-head">
+            <div class="big s80">O cliente vê <span class="hl">pelo link</span></div>
+          </div>
+          <div id="link-url">app.legalizaobra.com/cliente/orcamentos/…<span id="link-copy"><span class="swap" id="link-copy-swap"><span>Copiar</span><span>Copiado ✓</span></span></span></div>
+          <div class="screen phone" id="link-screen">
+            <video id="link-video" class="clip" src="assets/app/11-orcamento-cliente.mp4" data-start="0" data-media-start="0.8" muted playsinline></video>
+          </div>
+          <div class="badge" id="link-badge">Sem criar conta</div>
+        </div>
+      </div>
+      <script>
+        (() => {
+          const { dur, zoom, copyAt, flyAt, badgeAt } = window.__hyperframes.getVariables();
+          const tl = gsap.timeline({ paused: true });
+          const B = window.brand;
+          const fly = flyAt * dur;
+          B.fadeIn(tl, "#link-logo");
+          B.upIn(tl, "#link-head", 0.05);
+          B.popIn(tl, "#link-url", 0.1);
+          B.swapText(tl, "#link-copy-swap", copyAt * dur);
+          tl.to("#link-url", { y: 560, scale: 0.3, opacity: 0, duration: 0.45, ease: "power2.in" }, fly);
+          B.floatIn(tl, "#link-screen", fly + 0.1);
+          B.popIn(tl, "#link-badge", badgeAt * dur);
+          B.camera(tl, "link", zoom, dur);
+          window.__timelines["link"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

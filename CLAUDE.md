@@ -7,7 +7,7 @@ Read [README.md](README.md) first for setup and the build commands.
 
 - `engine.py`: the **brand-agnostic** pipeline. It times the scenes, reads the narration (ElevenLabs take, or Kokoro / edge-tts / `say` per line), times the scenes to a song, and generates the SFX and music bed. Then it writes the root HyperFrames `index.html`, renders, and muxes. Never put brand or story specifics here.
 - `themes/legalizaobra.{css,js,py}`: the **brand layer**. The CSS holds fonts, palette, stage variants and blocks. `window.brand` holds the motion helpers. The Python file holds the palette constants and `HF_THEME`. The whole Legaliza Obra look lives here.
-- `videos/<team>/<name>.py`: one **story**. It is a `Storyboard` of `scene()`/`flash()` calls handed to `engine.build()`, with its HyperFrames project in `videos/<team>/<name>-scenes/compositions/<scene id>.html`. `marketing/economia-inss` is the reference.
+- `videos/<team>/<name>.py`: one **story**. It is a `Storyboard` of `scene()`/`flash()` calls handed to `engine.build()`, with its HyperFrames project in `videos/<team>/<name>-scenes/compositions/<scene id>.html`. `marketing/economia-inss` is the reference. `marketing/orcamento-obra` shows animated product scenes and cut footage.
 - `app_clips.py`: copies app recordings from the frontend's recorder into `assets/app/` (git-ignored). A storyboard lists the clips it uses and calls `app_clips.ensure([...])` in `main()`.
 - `build.py`: the dispatcher. `python build.py <team>/<name>` (default `marketing/economia-inss`).
 
@@ -48,6 +48,13 @@ Read [README.md](README.md) first for setup and the build commands.
 ## Render-on-demand, never CI
 
 There is **no CI workflow on purpose**. An agent renders locally when the script changes. Don't add GitHub Actions, and don't commit generated media or app recordings. The `.mp4` ships as a Release asset, and `poster.png` is rebuilt on every build.
+
+**Publish every finished video as a GitHub Release.** Do it without being asked, as the last step of the task:
+
+- A new video gets `<name>-v1`. A video you render again with a visible or audible change gets the next number. Check the numbers with `gh release list`.
+- Attach the `.mp4` and the `poster.png` from the same build.
+- First commit and push the storyboard and scenes that made the video. Then point the release at that commit with `--target <sha>`, so the tag holds the source of the video.
+- README → Publishing has the command.
 
 ## Shared by everyone, kept in sync
 

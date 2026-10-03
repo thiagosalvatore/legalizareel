@@ -1,0 +1,55 @@
+<!doctype html>
+<html data-composition-variables='[{"id":"dur","type":"number","label":"Scene length (s)","default":6.7},{"id":"zoom","type":"number","label":"Camera push (1 = none)","default":1},{"id":"signedAt","type":"number","label":"The client signs (fraction)","default":0.8},{"id":"cutsAt","type":"string","label":"Cuts in the clip (s)","default":"2.4,3"}]'>
+  <body>
+    <template id="contrato-template">
+      <style>
+        #contrato-root { position: absolute; inset: 0; }
+        #contrato-head { position: absolute; top: 250px; left: 0; right: 0; z-index: 40; }
+        #contrato-screen { top: 520px; }
+        #contrato-signer {
+          position: absolute; top: 1290px; left: 90px; width: 900px; z-index: 45;
+          display: flex; align-items: center; gap: 24px; padding: 28px 34px;
+          background: var(--white); border-radius: 28px; box-shadow: 0 30px 60px rgba(16, 44, 41, .28);
+          font-size: 38px; font-weight: 600; color: var(--ink);
+        }
+        #contrato-signer .who { display: flex; flex-direction: column; gap: 4px; }
+        #contrato-signer .who small { font-size: 26px; font-weight: 500; color: #636363; }
+        #contrato-signer .swap { margin-left: auto; }
+        #contrato-signer .swap > * { justify-self: end; }
+      </style>
+      <div id="contrato-root" data-composition-id="contrato" data-width="1080" data-height="1920">
+        <div class="stage surface">
+          <img class="logo" id="contrato-logo" src="assets/brand/logo.png" alt="Legaliza Obra" />
+          <div class="center" id="contrato-head">
+            <div class="big s80">Pronto pra <span class="hl">assinar</span></div>
+          </div>
+          <div class="screen" id="contrato-screen">
+            <video id="contrato-video" class="clip" src="assets/app/contrato-cut.mp4" data-start="0" data-media-start="0" muted playsinline></video>
+          </div>
+          <div id="contrato-signer">
+            <span class="who">Maria Ferreira<small>Assinatura eletrônica</small></span>
+            <span class="swap" id="contrato-status"><span class="status pending">Aguardando</span><span class="status done"><span class="check">✓</span>Assinado</span></span>
+          </div>
+        </div>
+      </div>
+      <script>
+        (() => {
+          const { dur, zoom, signedAt, cutsAt } = window.__hyperframes.getVariables();
+          const tl = gsap.timeline({ paused: true });
+          const B = window.brand;
+          const lastCut = String(cutsAt).split(",").map(Number).at(-1);
+          B.fadeIn(tl, "#contrato-logo");
+          B.upIn(tl, "#contrato-head", 0.1);
+          B.floatIn(tl, "#contrato-screen", 0.1);
+          tl.set("#contrato-video", { scale: 1.06, x: -70, y: -280 }, 0);
+          tl.set("#contrato-video", { scale: 1.4, x: -55, y: 0 }, lastCut);
+          tl.fromTo("#contrato-screen", { scale: 1.04 }, { scale: 1, duration: 0.25, ease: "power2.out" }, lastCut);
+          B.upIn(tl, "#contrato-signer", lastCut + 0.2);
+          B.swapText(tl, "#contrato-status", signedAt * dur);
+          B.camera(tl, "contrato", zoom, dur);
+          window.__timelines["contrato"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

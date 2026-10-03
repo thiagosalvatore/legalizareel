@@ -6,7 +6,10 @@ The default output is a vertical 1080×1920 reel in Brazilian Portuguese, for In
 
 This repo is a fork of PostHog's [hogreel](https://github.com/PostHog/hogreel). It keeps the engine. The theme, assets and videos are new.
 
-Videos so far: [`marketing/economia-inss`](videos/marketing/economia-inss.py), a 53 s reel. It shows the INSS savings, then the eSocial work that piles up and gets rejected, then the app doing it in one click, with real app footage. For a new video, copy it.
+Videos so far:
+
+- [`marketing/economia-inss`](videos/marketing/economia-inss.py), a 53 s reel. It shows the INSS savings, then the eSocial work that piles up and gets rejected, then the app doing it in one click, with real app footage. For a new video, copy it.
+- [`marketing/orcamento-obra`](videos/marketing/orcamento-obra.py), a 64 s reel. One client goes from the simulação to an orçamento, a link, a contract and an obra, and nobody types her data twice. It mixes animated scenes with cut app footage.
 
 ## Quick start
 
@@ -140,6 +143,16 @@ A storyboard hands its visuals to HyperFrames with `build(sb, ..., hyperframes=<
   - It reads its final length from the `dur` variable. Beats land at a fraction of the scene, so they still line up whatever the soundtrack makes the scene's length.
 - The scene's `effect` arrives as the `zoom` variable. Every scene ends with `window.brand.camera(tl, "<id>", zoom, dur)`: a slow push on the stage while the logo holds still.
 - `scene(..., blend=0.5)` cross-fades into that scene instead of cutting.
+- The theme has blocks for scenes that animate the product instead of filming it:
+  - `.window` is an app or file window, and `.field` / `.input` is a form field in it.
+  - `.doc` is a paper page, and `.swap` holds two `.var` / `.val` chips (a template field and its value).
+  - `.screen.phone` is a phone frame for a clip recorded at a phone size.
+  - `.chain`, `.step` and `.link` make a vertical flow of steps. `.check` is a ticked circle, and `.status.pending` / `.status.done` are status badges.
+- The theme's motion helpers, besides `upIn`, `popIn`, `fadeIn`, `floatIn`, `counter` and `camera`:
+  - `typeText(tl, el, text, at, cps)` types text out and returns when it ends.
+  - `swapText(tl, el, at)` flips a `.swap` from its first child to its second.
+  - `drawLine(tl, el, at, duration)` grows a `.link` downwards.
+  - `counter(..., format)` takes an optional formatter, for counts that are not money.
 - `scene(..., vars={...})` hands extra values to the scene's composition variables. Declare them in the composition's `data-composition-variables`. Use this when the storyboard also needs a value, such as the beat times for sounds. Then the value is written once, in the storyboard. `burocracia` gets its pile timings this way.
 - The engine writes the root `index.html`, renders silently with the pinned CLI, and muxes the audio on top.
 - `assets/` and the theme files are symlinked into the project at render time. That's why scenes use `assets/...` paths and the classes in `themes/legalizaobra.css`.
@@ -241,12 +254,15 @@ The theme follows the app and site after the redesign (frontend `app/globals.css
 
 ## Publishing
 
-The mp4 is a Release asset, kept out of git history. Make one release per video:
+Every finished video ships as a GitHub Release asset, kept out of git history. Publish it as the last step of the work, after the storyboard and scenes are committed and pushed:
 
 ```bash
-gh release create economia-inss-v1 economia-inss.mp4 poster.png \
-  --title "Economia de INSS reel" \
-  --notes "Re-render with: python build.py marketing/economia-inss"
+gh release create orcamento-obra-v1 orcamento-obra.mp4 poster.png \
+  --target "$(git rev-parse HEAD)" \
+  --title "Do orçamento à obra reel" \
+  --notes "Re-render with: python build.py marketing/orcamento-obra"
 ```
 
-`poster.png` is a build output too. Every build makes a new one.
+- A new video starts at `-v1`. Each new render with a visible or audible change gets the next number. `gh release list` shows the numbers in use.
+- `--target` ties the tag to the commit that has the video's source.
+- Attach the `poster.png` from the same build. Every build makes a new one, so publish before you build another video.
