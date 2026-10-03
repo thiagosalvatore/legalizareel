@@ -1,0 +1,60 @@
+<!doctype html>
+<html data-composition-variables='[{"id":"dur","type":"number","label":"Scene length (s)","default":7},{"id":"zoom","type":"number","label":"Camera push (1 = none)","default":1},{"id":"windowAt","type":"number","label":"Plugin page opens (fraction)","default":0.23},{"id":"typeAt","type":"number","label":"Search starts typing (fraction)","default":0.4},{"id":"resultAt","type":"number","label":"Plugin shows up (fraction)","default":0.6},{"id":"addAt","type":"number","label":"Adicionar clicked (fraction)","default":0.85}]'>
+  <body>
+    <template id="plugin-template">
+      <style>
+        #plugin-root { position: absolute; inset: 0; }
+        #plugin-text { position: absolute; left: 140px; top: 360px; width: 760px; display: flex; flex-direction: column; align-items: flex-start; gap: 36px; z-index: 20; }
+        #plugin-window { left: 920px; top: 250px; width: 880px; z-index: 30; }
+        #plugin-window .body { display: flex; flex-direction: column; gap: 30px; padding: 36px 40px 44px; }
+        #plugin-crumb { font-size: 30px; font-weight: 600; color: #636363; }
+        #plugin-crumb b { color: var(--ink); }
+        #plugin-result { display: flex; align-items: center; gap: 26px; padding: 26px 28px; border: 1px solid var(--divider); border-radius: 22px; background: var(--surface); }
+        #plugin-icon { width: 92px; height: 92px; border-radius: 22px; background: var(--white); object-fit: contain; padding: 10px; box-sizing: border-box; }
+        #plugin-name { flex: 1; display: flex; flex-direction: column; gap: 6px; font-size: 38px; font-weight: 700; color: var(--ink); }
+        #plugin-name span { white-space: nowrap; font-size: 26px; font-weight: 500; color: #636363; }
+        #plugin-add { padding: 16px 30px; border-radius: 14px; background: var(--teal); color: var(--white); font-size: 30px; font-weight: 600; }
+        #plugin-add .swap > * { white-space: nowrap; }
+      </style>
+      <div id="plugin-root" data-composition-id="plugin" data-width="1920" data-height="1080">
+        <div class="stage surface landscape">
+          <img class="logo" id="plugin-logo" src="assets/brand/logo.png" alt="Legaliza Obra" />
+          <div id="plugin-text">
+            <div class="badge" id="plugin-step">Passo 1 · no Claude</div>
+            <div class="big s96" id="plugin-head">Adicione o <span class="hl">plugin</span></div>
+          </div>
+          <div class="window" id="plugin-window">
+            <div class="bar"><i></i><i></i><i></i><span>claude.ai/customize/plugins</span></div>
+            <div class="body">
+              <div id="plugin-crumb">Personalizar → Plugins → <b>Descobrir</b></div>
+              <div class="field">
+                <div class="input"><span id="plugin-typed"></span><span class="caret"></span></div>
+              </div>
+              <div id="plugin-result">
+                <img id="plugin-icon" src="assets/brand/logo-icon.png" alt="" />
+                <div id="plugin-name">LegalizaObra<span>Regularize o INSS da sua obra</span></div>
+                <span id="plugin-add"><span class="swap" id="plugin-swap"><span>Adicionar</span><span>Adicionado ✓</span></span></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <script>
+        (() => {
+          const { dur, zoom, windowAt, typeAt, resultAt, addAt } = window.__hyperframes.getVariables();
+          const tl = gsap.timeline({ paused: true });
+          const B = window.brand;
+          B.fadeIn(tl, "#plugin-logo");
+          B.upIn(tl, ["#plugin-step", "#plugin-head"], 0.1, 0.15);
+          B.floatIn(tl, "#plugin-window", windowAt * dur);
+          B.typeText(tl, "#plugin-typed", "LegalizaObra", typeAt * dur, 14);
+          B.popIn(tl, "#plugin-result", resultAt * dur);
+          tl.to("#plugin-add", { scale: 0.92, duration: 0.08, yoyo: true, repeat: 1, ease: "power1.inOut" }, addAt * dur);
+          B.swapText(tl, "#plugin-swap", addAt * dur);
+          B.camera(tl, "plugin", zoom, dur);
+          window.__timelines["plugin"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

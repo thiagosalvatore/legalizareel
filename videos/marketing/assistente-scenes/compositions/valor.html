@@ -1,5 +1,5 @@
 <!doctype html>
-<html data-composition-variables='[{"id":"dur","type":"number","label":"Scene length (s)","default":8},{"id":"zoom","type":"number","label":"Camera push (1 = none)","default":1},{"id":"subAt","type":"number","label":"Subline lands (fraction)","default":0.33},{"id":"chipsAt","type":"string","label":"Each task pops (fractions)","default":"0.47,0.6,0.72,0.86"}]'>
+<html data-composition-variables='[{"id":"dur","type":"number","label":"Scene length (s)","default":8},{"id":"zoom","type":"number","label":"Camera push (1 = none)","default":1},{"id":"subAt","type":"number","label":"Subline lands (fraction)","default":0.33},{"id":"chipsAt","type":"string","label":"Each task pops (fractions)","default":"0.47,0.6,0.72,0.86"},{"id":"soonAt","type":"number","label":"ChatGPT note lands (fraction)","default":0.93}]'>
   <body>
     <template id="valor-template">
       <style>
@@ -8,25 +8,27 @@
         #valor-tasks { display: grid; grid-template-columns: repeat(2, 720px); gap: 32px 40px; }
         #valor-tasks .pill { justify-content: flex-start; }
         #valor-tasks .check { background: var(--mint-2); color: var(--teal); }
+        #valor-soon { padding: 14px 32px; font-size: 32px; }
       </style>
       <div id="valor-root" data-composition-id="valor" data-width="1920" data-height="1080">
         <div class="stage brand landscape">
           <div class="logo-pill" id="valor-logo"><img src="assets/brand/logo.png" alt="Legaliza Obra" /></div>
           <div class="center">
-            <div class="big s96" id="valor-head">Legaliza Obra <span class="hl">no Claude e no ChatGPT</span></div>
-            <div class="sub" id="valor-sub">Você pede. O assistente faz.</div>
+            <div class="big s96" id="valor-head">Legaliza Obra <span class="hl">no Claude</span></div>
+            <div class="sub" id="valor-sub">Peça numa conversa, sem abrir o app</div>
             <div id="valor-tasks">
               <div class="pill light valor-task"><span class="check">✓</span>Simular INSS</div>
               <div class="pill light valor-task"><span class="check">✓</span>Criar orçamento</div>
               <div class="pill light valor-task"><span class="check">✓</span>Enviar obra ao eSocial</div>
               <div class="pill light valor-task"><span class="check">✓</span>Gerar guia DARF</div>
             </div>
+            <div class="pill translucent" id="valor-soon">ChatGPT: em breve</div>
           </div>
         </div>
       </div>
       <script>
         (() => {
-          const { dur, zoom, subAt, chipsAt } = window.__hyperframes.getVariables();
+          const { dur, zoom, subAt, chipsAt, soonAt } = window.__hyperframes.getVariables();
           const tl = gsap.timeline({ paused: true });
           const B = window.brand;
           B.fadeIn(tl, "#valor-logo");
@@ -34,6 +36,7 @@
           B.upIn(tl, "#valor-sub", subAt * dur);
           const tasks = document.querySelectorAll(".valor-task");
           String(chipsAt).split(",").map(Number).forEach((at, i) => B.popIn(tl, tasks[i], at * dur));
+          B.fadeIn(tl, "#valor-soon", soonAt * dur);
           B.camera(tl, "valor", zoom, dur);
           window.__timelines["valor"] = tl;
         })();

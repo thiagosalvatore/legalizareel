@@ -10,7 +10,7 @@ Videos so far:
 
 - [`marketing/economia-inss`](videos/marketing/economia-inss.py), a 53 s reel. It shows the INSS savings, then the eSocial work that piles up and gets rejected, then the app doing it in one click, with real app footage. For a new video, copy it.
 - [`marketing/orcamento-obra`](videos/marketing/orcamento-obra.py), a 64 s reel. One client goes from the simulação to an orçamento, a link, a contract and an obra, and nobody types her data twice. It mixes animated scenes with cut app footage.
-- [`marketing/assistente`](videos/marketing/assistente.py), a 65 s wide (1920×1080) product intro. It sells the Claude and ChatGPT connector, shows how to connect it, and plays a real Claude session that runs a simulação.
+- [`marketing/assistente`](videos/marketing/assistente.py), a 61 s wide (1920×1080) product intro. It sells the Legaliza Obra plugin for Claude, shows how to add and connect it, and plays a real Claude session that runs a simulação.
 
 ## Quick start
 
@@ -111,7 +111,7 @@ In a scene, a clip goes in a `.screen` frame:
 - `scale: 1.06, x: -70` hides the app's sidebar rail.
 - `scale: 1.8, x: -394, y: -925` centres a dialog in the middle of the app.
 
-A recording made outside the recorder, such as a screen capture of Claude, goes in with `app_clips.adopt(<path>, "<name>")`. It writes `assets/app/<name>.mp4` at the recording's own size, and refreshes it when the recording is newer. Keep the recording outside the repo. `marketing/assistente` reads its Claude session from `CLAUDE_RECORDING`, which defaults to `~/projects/personal/legaliza-obra/recordings/claude-simulacao.mp4`.
+A recording made outside the recorder, such as a screen capture of Claude, goes in with `app_clips.adopt(<path>, "<name>")`. It writes `assets/app/<name>.mp4` at the recording's own size, and refreshes it when the recording is newer. Keep the recording outside the repo. `marketing/assistente` reads its Claude session from `CLAUDE_RECORDING`, which defaults to `~/Documents/LegalizaObra Videos/claude_video.mp4`. Export the capture at full size: the wide frame zooms in on it.
 
 A recording often waits on something the reel should not show, such as a page that compiles in dev. To drop those stretches, cut the clip:
 

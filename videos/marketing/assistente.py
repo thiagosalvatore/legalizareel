@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""Storyboard for the "Legaliza Obra no seu assistente" intro: a wide pt-BR video that sells the Claude and ChatGPT
-connector, shows how to connect it, and plays a real Claude session that runs a simulação.
+"""Storyboard for the "Legaliza Obra no Claude" intro: a wide pt-BR video that sells the Claude plugin, shows how
+to add and connect it, and plays a real Claude session that runs a simulação.
 
 Render:
   python build.py marketing/assistente                                  # edge-tts / Kokoro voice
@@ -16,19 +16,19 @@ from engine import WIDE, Beat, Storyboard, build
 from themes.legalizaobra import HF_THEME, TEAL, WHITE
 
 SCENES = Path(__file__).resolve().parent / "assistente-scenes"
-DEFAULT_CLAUDE_RECORDING = Path.home() / "projects" / "personal" / "legaliza-obra" / "recordings" / "claude-simulacao.mp4"
+DEFAULT_CLAUDE_RECORDING = Path.home() / "Documents" / "LegalizaObra Videos" / "claude_video.mp4"
 CLAUDE_RECORDING = Path(os.environ.get("CLAUDE_RECORDING", DEFAULT_CLAUDE_RECORDING)).expanduser()
 CLAUDE_CLIP = "claude-simulacao"
 PROMPT_SENT, CHAT_SHOWN, ALLOW_CLICKED, TABLE_SHOWN = 2.2, 2.25, 6.85, 10.7
 CUTS = {
-    "pedido": [(0.4, 2.7), (4.1, 8.6)],
+    "pedido": [(0.4, 2.7), (4.2, 8.6)],
     "resultado": [(8.35, 17.4)],
 }
-HOOK = {"typeAt": 0.04, "headAt": 0.4}
-VALOR = {"subAt": 0.33, "chipsAt": (0.475, 0.6, 0.71, 0.87)}
-COPIAR = {"menuAt": 0.45, "windowAt": 0.54, "copyAt": 0.82}
-PASSOS = {"stepsAt": (0.11, 0.24, 0.66), "permitAt": 0.886, "doneAt": 0.935}
-SEGURO = {"checksAt": (0.46, 0.78)}
+HOOK = {"typeAt": 0.04, "headAt": 0.42}
+VALOR = {"subAt": 0.25, "chipsAt": (0.44, 0.58, 0.69, 0.86), "soonAt": 0.93}
+PLUGIN = {"windowAt": 0.23, "typeAt": 0.52, "resultAt": 0.63, "addAt": 0.85}
+CONECTAR = {"stepsAt": (0.15, 0.51), "permitAt": 0.85, "doneAt": 0.9}
+SEGURO = {"checksAt": (0.49, 0.8)}
 INSS_BEFORE, INSS_AFTER = 11680, 4976
 RESULTADO = {"before": INSS_BEFORE, "after": INSS_AFTER, "strikeAt": 0.54, "nowAt": 0.71}
 COUNTER_LANDS_AFTER = 1.2
@@ -55,22 +55,21 @@ scene(
 )
 scene(
     id="valor", effect="punch", min_dur=8.0, vars=scene_vars(VALOR),
-    narration="Agora a Legaliza Obra funciona dentro do Claude e do ChatGPT. Você pede, e o assistente simula o INSS, "
+    narration="Agora a Legaliza Obra funciona dentro do Claude. Você pede numa conversa, e o Claude simula o INSS, "
               "faz o orçamento, manda a obra ao eSocial e gera a guia DARF.",
     sfx=[*[("tick", Beat(at, 0.1)) for at in VALOR["chipsAt"]], ("swoosh", -0.3)],
 )
 flash(TEAL, 0.066)
 scene(
-    id="copiar", min_dur=5.5, vars=COPIAR,
-    narration="Conectar é rápido. No app, abra o menu, clique em Conectar ChatGPT ou Claude, e copie o endereço.",
-    sfx=[("click", Beat(COPIAR["menuAt"])), ("click", Beat(COPIAR["copyAt"]))],
+    id="plugin", min_dur=6.0, vars=PLUGIN,
+    narration="Conectar é rápido. No Claude, abra Personalizar, Plugins, e procure Legaliza Obra. Depois, clique em Adicionar.",
+    sfx=[("type", Beat(PLUGIN["typeAt"], 0.1)), ("click", Beat(PLUGIN["addAt"]))],
 )
 scene(
-    id="passos", min_dur=7.0, vars=scene_vars(PASSOS),
-    narration="No Claude, vá em Conectores, adicione um conector personalizado e cole o endereço. "
-              "Entre com a sua conta e clique em Permitir.",
-    sfx=[*[("tick", Beat(at, 0.1)) for at in PASSOS["stepsAt"]], ("click", Beat(PASSOS["permitAt"])),
-         ("success", Beat(PASSOS["doneAt"], 0.1)), ("swoosh", -0.3)],
+    id="conectar", min_dur=6.0, vars=scene_vars(CONECTAR),
+    narration="No plugin, abra Conectores e clique em Conectar. Entre com a sua conta e clique em Permitir.",
+    sfx=[*[("tick", Beat(at, 0.1)) for at in CONECTAR["stepsAt"]], ("click", Beat(CONECTAR["permitAt"])),
+         ("success", Beat(CONECTAR["doneAt"], 0.1)), ("swoosh", -0.3)],
 )
 flash(WHITE, 0.066)
 scene(
@@ -92,7 +91,7 @@ scene(
 )
 scene(
     id="cta", effect="slowpunch", min_dur=4.5, blend=0.5,
-    narration="[excited] Conecte a Legaliza Obra ao seu assistente hoje.",
+    narration="[excited] Conecte a Legaliza Obra ao Claude hoje.",
     sfx=[("swoosh", 0.0), ("ding2", Beat(0.35, 0.15))],
 )
 
