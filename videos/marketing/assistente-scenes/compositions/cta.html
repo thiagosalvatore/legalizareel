@@ -1,0 +1,36 @@
+<!doctype html>
+<html data-composition-variables='[{"id":"dur","type":"number","label":"Scene length (s)","default":4.5},{"id":"zoom","type":"number","label":"Camera push (1 = none)","default":1}]'>
+  <body>
+    <template id="cta-template">
+      <style>
+        #cta-root { position: absolute; inset: 0; }
+        #cta-card { padding: 32px 52px; border: 0; }
+        #cta-logo { display: block; width: 520px; }
+        #cta-url { font-size: 44px; }
+      </style>
+      <div id="cta-root" data-composition-id="cta" data-width="1920" data-height="1080">
+        <div class="stage brand landscape">
+          <div class="center">
+            <div class="card" id="cta-card"><img id="cta-logo" src="assets/brand/logo.png" alt="Legaliza Obra" /></div>
+            <div class="big s110" id="cta-line">Conecte ao seu assistente</div>
+            <div class="sub" id="cta-sub">No app: menu → Conectar ChatGPT ou Claude</div>
+            <div class="pill light" id="cta-url">legalizaobra.com</div>
+          </div>
+        </div>
+      </div>
+      <script>
+        (() => {
+          const { dur, zoom } = window.__hyperframes.getVariables();
+          const tl = gsap.timeline({ paused: true });
+          const B = window.brand;
+          B.popIn(tl, "#cta-card", 0.05);
+          B.upIn(tl, ["#cta-line", "#cta-sub"], 0.25, 0.16);
+          B.popIn(tl, "#cta-url", 0.35 * dur);
+          tl.to("#cta-url", { scale: 1.06, duration: 0.35, ease: "sine.inOut", yoyo: true, repeat: 1 }, 0.6 * dur);
+          B.camera(tl, "cta", zoom, dur);
+          window.__timelines["cta"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

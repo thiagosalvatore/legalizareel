@@ -1,0 +1,9 @@
+# written by engine.py on every render
+index.html
+assets
+theme.css
+theme.js
+# HyperFrames output
+renders/
+snapshots/
+.hyperframes/

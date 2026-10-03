@@ -8,7 +8,7 @@ Read [README.md](README.md) first for setup and the build commands.
 - `engine.py`: the **brand-agnostic** pipeline. It times the scenes, reads the narration (ElevenLabs take, or Kokoro / edge-tts / `say` per line), times the scenes to a song, and generates the SFX and music bed. Then it writes the root HyperFrames `index.html`, renders, and muxes. Never put brand or story specifics here.
 - `themes/legalizaobra.{css,js,py}`: the **brand layer**. The CSS holds fonts, palette, stage variants and blocks. `window.brand` holds the motion helpers. The Python file holds the palette constants and `HF_THEME`. The whole Legaliza Obra look lives here.
 - `videos/<team>/<name>.py`: one **story**. It is a `Storyboard` of `scene()`/`flash()` calls handed to `engine.build()`, with its HyperFrames project in `videos/<team>/<name>-scenes/compositions/<scene id>.html`. `marketing/economia-inss` is the reference. `marketing/orcamento-obra` shows animated product scenes and cut footage.
-- `app_clips.py`: copies app recordings from the frontend's recorder into `assets/app/` (git-ignored). A storyboard lists the clips it uses and calls `app_clips.ensure([...])` in `main()`.
+- `app_clips.py`: copies app recordings from the frontend's recorder into `assets/app/` (git-ignored). A storyboard lists the clips it uses and calls `app_clips.ensure([...])` in `main()`. A recording made outside the recorder (a Claude session, say) goes in with `app_clips.adopt(path, name)`.
 - `build.py`: the dispatcher. `python build.py <team>/<name>` (default `marketing/economia-inss`).
 
 **Scenes:**
@@ -17,7 +17,7 @@ Read [README.md](README.md) first for setup and the build commands.
 - Every scene ends with `window.brand.camera(...)`, which pushes in on the content and keeps the logo still. Never scale the whole slot: that zooms the logo too.
 - Before writing scenes, read `npx hyperframes@0.8.85 docs compositions` / `gsap`, and copy an existing scene's file shape (`videos/marketing/economia-inss-scenes/compositions/obra.html`).
 
-**Frame size:** `build(..., size=VERTICAL)` (1080×1920) is the default. `WIDE` is 1920×1080. Design scenes for the vertical safe area: platform UI covers about the top 250 px and the bottom 400 px of a reel. Keep headlines and numbers between those.
+**Frame size:** `build(..., size=VERTICAL)` (1080×1920) is the default. `WIDE` is 1920×1080, for product intros (`marketing/assistente`); its scenes use `.stage.landscape` and `.screen.wide`. Design scenes for the vertical safe area: platform UI covers about the top 250 px and the bottom 400 px of a reel. Keep headlines and numbers between those.
 
 **App footage** comes from the frontend repo's `mock-backend/recording/` (Playwright, 1080×1920, fake cursor, mock data). README → App footage has the commands.
 - Frame a clip in `.screen` and animate the `<video>` (`x`, `y`, `scale`, origin at its top-left corner) to pan and zoom onto the moment that matters.

@@ -1,0 +1,70 @@
+<!doctype html>
+<html data-composition-variables='[{"id":"dur","type":"number","label":"Scene length (s)","default":7},{"id":"zoom","type":"number","label":"Camera push (1 = none)","default":1},{"id":"stepsAt","type":"string","label":"Each step lands (fractions)","default":"0.05,0.3,0.62"},{"id":"permitAt","type":"number","label":"Permitir clicked (fraction)","default":0.86},{"id":"doneAt","type":"number","label":"Conectado pops (fraction)","default":0.92}]'>
+  <body>
+    <template id="passos-template">
+      <style>
+        #passos-root { position: absolute; inset: 0; }
+        #passos-head { position: absolute; top: 150px; left: 140px; display: flex; align-items: center; gap: 32px; z-index: 20; }
+        #passos-chain { position: absolute; top: 330px; left: 140px; align-items: flex-start; z-index: 20; }
+        #passos-chain .step { width: 860px; font-size: 40px; box-shadow: 0 20px 40px rgba(16, 44, 41, .14); }
+        #passos-chain .link { margin-left: 82px; }
+        #passos-chain .url { display: block; margin-top: 8px; font-size: 28px; font-weight: 500; color: var(--teal); }
+        #passos-consent { left: 1120px; top: 330px; width: 660px; z-index: 30; }
+        #passos-consent .body { display: flex; flex-direction: column; gap: 26px; padding: 40px 44px 44px; }
+        #passos-consent h3 { margin: 0; font-family: var(--display); font-weight: 400; font-size: 46px; letter-spacing: -.02em; line-height: 1.15; }
+        #passos-consent p { margin: 0; font-size: 28px; line-height: 1.45; color: #636363; }
+        #passos-consent .buttons { display: flex; gap: 20px; margin-top: 10px; }
+        #passos-consent .buttons span { flex: 1; padding: 22px 0; border-radius: 16px; text-align: center; font-size: 32px; font-weight: 600; }
+        #passos-deny { border: 2px solid var(--divider); color: var(--ink); }
+        #passos-permit { background: var(--teal); color: var(--white); }
+        #passos-done { position: absolute; left: 1290px; top: 860px; z-index: 40; box-shadow: 0 20px 40px rgba(16, 44, 41, .2); }
+      </style>
+      <div id="passos-root" data-composition-id="passos" data-width="1920" data-height="1080">
+        <div class="stage surface landscape">
+          <img class="logo" id="passos-logo" src="assets/brand/logo.png" alt="Legaliza Obra" />
+          <div id="passos-head">
+            <div class="badge" id="passos-badge">Passo 2 · no Claude</div>
+            <div class="big s80" id="passos-title">Cole e <span class="hl">permita</span></div>
+          </div>
+          <div class="chain" id="passos-chain">
+            <div class="step passos-step"><span class="num">1</span>Configurações → Conectores</div>
+            <div class="link passos-link"></div>
+            <div class="step passos-step"><span class="num">2</span><span>Adicionar conector personalizado<span class="url">https://api.legalizaobra.com/mcp</span></span></div>
+            <div class="link passos-link"></div>
+            <div class="step passos-step"><span class="num">3</span>Entre e clique em Permitir</div>
+          </div>
+          <div class="window" id="passos-consent">
+            <div class="bar"><i></i><i></i><i></i><span>app.legalizaobra.com</span></div>
+            <div class="body">
+              <h3>Claude quer acessar sua conta Legaliza Obra</h3>
+              <p>O assistente pede sua confirmação antes de enviar qualquer coisa ao eSocial ou de apagar dados.</p>
+              <div class="buttons"><span id="passos-deny">Negar</span><span id="passos-permit">Permitir</span></div>
+            </div>
+          </div>
+          <div class="status done" id="passos-done">Conectado ✓</div>
+        </div>
+      </div>
+      <script>
+        (() => {
+          const { dur, zoom, stepsAt, permitAt, doneAt } = window.__hyperframes.getVariables();
+          const tl = gsap.timeline({ paused: true });
+          const B = window.brand;
+          const steps = document.querySelectorAll(".passos-step");
+          const links = document.querySelectorAll(".passos-link");
+          const stepTimes = String(stepsAt).split(",").map((at) => Number(at) * dur);
+          B.fadeIn(tl, "#passos-logo");
+          B.upIn(tl, ["#passos-badge", "#passos-title"], 0.05, 0.12);
+          stepTimes.forEach((at, i) => {
+            if (i > 0) B.drawLine(tl, links[i - 1], at - 0.3, 0.3);
+            B.popIn(tl, steps[i], at);
+          });
+          B.floatIn(tl, "#passos-consent", stepTimes[2] + 0.2);
+          tl.to("#passos-permit", { scale: 0.92, duration: 0.08, yoyo: true, repeat: 1, ease: "power1.inOut" }, permitAt * dur);
+          B.popIn(tl, "#passos-done", doneAt * dur);
+          B.camera(tl, "passos", zoom, dur);
+          window.__timelines["passos"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>
