@@ -49,6 +49,13 @@ Read [README.md](README.md) first for setup and the build commands.
 
 There is **no CI workflow on purpose**. An agent renders locally when the script changes. Don't add GitHub Actions, and don't commit generated media or app recordings. The `.mp4` ships as a Release asset, and `poster.png` is rebuilt on every build.
 
+**Publish every finished video as a GitHub Release.** Do it without being asked, as the last step of the task:
+
+- A new video gets `<name>-v1`. A video you render again with a visible or audible change gets the next number. Check the numbers with `gh release list`.
+- Attach the `.mp4` and the `poster.png` from the same build.
+- First commit and push the storyboard and scenes that made the video. Then point the release at that commit with `--target <sha>`, so the tag holds the source of the video.
+- README → Publishing has the command.
+
 ## Shared by everyone, kept in sync
 
 Improvements belong in the engine or the theme, not copy-pasted per video. When you catch yourself special-casing the engine for one video, generalize it instead.

@@ -254,12 +254,15 @@ The theme follows the app and site after the redesign (frontend `app/globals.css
 
 ## Publishing
 
-The mp4 is a Release asset, kept out of git history. Make one release per video:
+Every finished video ships as a GitHub Release asset, kept out of git history. Publish it as the last step of the work, after the storyboard and scenes are committed and pushed:
 
 ```bash
-gh release create economia-inss-v1 economia-inss.mp4 poster.png \
-  --title "Economia de INSS reel" \
-  --notes "Re-render with: python build.py marketing/economia-inss"
+gh release create orcamento-obra-v1 orcamento-obra.mp4 poster.png \
+  --target "$(git rev-parse HEAD)" \
+  --title "Do orçamento à obra reel" \
+  --notes "Re-render with: python build.py marketing/orcamento-obra"
 ```
 
-`poster.png` is a build output too. Every build makes a new one.
+- A new video starts at `-v1`. Each new render with a visible or audible change gets the next number. `gh release list` shows the numbers in use.
+- `--target` ties the tag to the commit that has the video's source.
+- Attach the `poster.png` from the same build. Every build makes a new one, so publish before you build another video.
