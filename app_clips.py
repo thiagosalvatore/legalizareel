@@ -58,6 +58,17 @@ def ensure(names: list[str]) -> None:
             _transcode(source, target)
 
 
+def adopt(source: Path, name: str) -> None:
+    """Make a recording made outside the recorder available as assets/app/<name>.mp4, at its own size."""
+    APP_ASSETS.mkdir(parents=True, exist_ok=True)
+    target = APP_ASSETS / f"{name}.mp4"
+    if not source.exists():
+        raise SystemExit(f"missing recording {source}")
+    if _is_stale(source, target):
+        print(f"syncing {name}")
+        _encode(source, target, [])
+
+
 def cut(name: str, segments: list[Segment], cut_name: str) -> None:
     """Join the (start, end) segments of assets/app/<name>.mp4 into assets/app/<cut_name>.mp4."""
     trims = [f"[0:v]trim=start={start}:end={end},setpts=PTS-STARTPTS[s{i}]" for i, (start, end) in enumerate(segments)]

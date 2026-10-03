@@ -1,0 +1,55 @@
+<!doctype html>
+<html data-composition-variables='[{"id":"dur","type":"number","label":"Scene length (s)","default":7},{"id":"zoom","type":"number","label":"Camera push (1 = none)","default":1},{"id":"tableAt","type":"number","label":"Table appears in the clip (s)","default":0.8},{"id":"before","type":"number","label":"INSS before (R$)","default":11680},{"id":"after","type":"number","label":"INSS after (R$)","default":4976},{"id":"strikeAt","type":"number","label":"Old INSS struck (fraction)","default":0.55},{"id":"nowAt","type":"number","label":"New INSS counts down (fraction)","default":0.62}]'>
+  <body>
+    <template id="resultado-template">
+      <style>
+        #resultado-root { position: absolute; inset: 0; }
+        #resultado-head { position: absolute; top: 60px; left: 0; right: 0; z-index: 40; }
+        #resultado-screen { top: 200px; left: 80px; width: 1100px; background: #141414; }
+        #resultado-card { position: absolute; left: 1260px; top: 300px; width: 580px; box-sizing: border-box; display: flex; flex-direction: column; gap: 18px; z-index: 40; }
+        #resultado-before { position: relative; width: fit-content; font-size: 64px; }
+        #resultado-strike { position: absolute; left: -6px; right: -6px; top: 52%; height: 6px; border-radius: 3px; background: var(--warning); transform-origin: left center; }
+        #resultado-now { font-size: 120px; color: var(--teal); }
+        #resultado-saved { position: absolute; left: 1260px; top: 760px; z-index: 45; box-shadow: 0 20px 40px rgba(16, 44, 41, .3); }
+      </style>
+      <div id="resultado-root" data-composition-id="resultado" data-width="1920" data-height="1080">
+        <div class="stage deep landscape">
+          <div class="logo-pill" id="resultado-logo"><img src="assets/brand/logo.png" alt="Legaliza Obra" /></div>
+          <div class="center" id="resultado-head">
+            <div class="big s80">A simulação, <span class="hl">em segundos</span></div>
+          </div>
+          <div class="screen wide" id="resultado-screen">
+            <video id="resultado-video" class="clip" src="assets/app/resultado-cut.mp4" data-start="0" data-media-start="0" muted playsinline></video>
+          </div>
+          <div class="card mint" id="resultado-card">
+            <div class="label">INSS nessa obra</div>
+            <div class="money hl-warn" id="resultado-before"><span id="resultado-before-value"></span><div id="resultado-strike"></div></div>
+            <div class="money" id="resultado-now"></div>
+          </div>
+          <div class="badge" id="resultado-saved"></div>
+        </div>
+      </div>
+      <script>
+        (() => {
+          const { dur, zoom, tableAt, before, after, strikeAt, nowAt } = window.__hyperframes.getVariables();
+          const tl = gsap.timeline({ paused: true });
+          const B = window.brand;
+          document.querySelector("#resultado-before-value").textContent = B.brl(before);
+          document.querySelector("#resultado-saved").textContent = `Economia de ${B.brl(before - after)}`;
+          B.fadeIn(tl, "#resultado-logo");
+          B.upIn(tl, "#resultado-head", 0.05);
+          B.floatIn(tl, "#resultado-screen", 0.05);
+          tl.set("#resultado-video", { scale: 2.35, x: -758, y: -427 }, 0);
+          tl.to("#resultado-video", { scale: 2.6, x: -860, y: -560, duration: dur - tableAt, ease: "sine.inOut" }, tableAt);
+          B.popIn(tl, "#resultado-card", tableAt + 0.3);
+          tl.fromTo("#resultado-strike", { scaleX: 0 }, { scaleX: 1, duration: 0.3, ease: "power2.out" }, strikeAt * dur);
+          B.popIn(tl, "#resultado-now", nowAt * dur - 0.2);
+          B.counter(tl, "#resultado-now", after, nowAt * dur, 1.2, before);
+          B.popIn(tl, "#resultado-saved", nowAt * dur + 1.2);
+          B.camera(tl, "resultado", zoom, dur);
+          window.__timelines["resultado"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

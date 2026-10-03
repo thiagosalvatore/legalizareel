@@ -1,0 +1,37 @@
+<!doctype html>
+<html data-composition-variables='[{"id":"dur","type":"number","label":"Scene length (s)","default":3.4},{"id":"zoom","type":"number","label":"Camera push (1 = none)","default":1},{"id":"typeAt","type":"number","label":"Message starts typing (fraction)","default":0.04},{"id":"headAt","type":"number","label":"Headline lands (fraction)","default":0.55}]'>
+  <body>
+    <template id="hook-template">
+      <style>
+        #hook-root { position: absolute; inset: 0; }
+        #hook-bubble { align-self: flex-end; margin-right: 260px; min-height: 60px; }
+        #hook-head { max-width: 1500px; }
+      </style>
+      <div id="hook-root" data-composition-id="hook" data-width="1920" data-height="1080">
+        <div class="stage deep landscape">
+          <img class="photo" id="hook-photo" src="assets/brand/obra-em-construcao.webp" alt="" />
+          <div class="shade"></div>
+          <div class="logo-pill" id="hook-logo"><img src="assets/brand/logo.png" alt="Legaliza Obra" /></div>
+          <div class="center">
+            <div class="bubble" id="hook-bubble"><span id="hook-typed"></span><span class="caret"></span></div>
+            <div class="big s110" id="hook-head">Cuide das suas obras <span class="hl">conversando</span></div>
+          </div>
+        </div>
+      </div>
+      <script>
+        (() => {
+          const { dur, zoom, typeAt, headAt } = window.__hyperframes.getVariables();
+          const tl = gsap.timeline({ paused: true });
+          const B = window.brand;
+          tl.fromTo("#hook-photo", { scale: 1.12 }, { scale: 1, duration: dur, ease: "none" }, 0);
+          B.fadeIn(tl, "#hook-logo");
+          B.popIn(tl, "#hook-bubble", 0.05);
+          B.typeText(tl, "#hook-typed", "Simula o INSS da minha obra em SP", typeAt * dur, 24);
+          B.upIn(tl, "#hook-head", headAt * dur);
+          B.camera(tl, "hook", zoom, dur);
+          window.__timelines["hook"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

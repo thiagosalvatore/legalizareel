@@ -1,0 +1,38 @@
+<!doctype html>
+<html data-composition-variables='[{"id":"dur","type":"number","label":"Scene length (s)","default":5},{"id":"zoom","type":"number","label":"Camera push (1 = none)","default":1},{"id":"checksAt","type":"string","label":"Each promise lands (fractions)","default":"0.3,0.7"}]'>
+  <body>
+    <template id="seguro-template">
+      <style>
+        #seguro-root { position: absolute; inset: 0; }
+        #seguro-list { display: flex; flex-direction: column; gap: 32px; }
+        #seguro-list .step { width: 1100px; font-size: 44px; }
+        #seguro-list .check { background: var(--mint-2); color: var(--teal); }
+      </style>
+      <div id="seguro-root" data-composition-id="seguro" data-width="1920" data-height="1080">
+        <div class="stage deep landscape">
+          <div class="logo-pill" id="seguro-logo"><img src="assets/brand/logo.png" alt="Legaliza Obra" /></div>
+          <div class="center">
+            <div class="big s110" id="seguro-head">Você <span class="hl">no controle</span></div>
+            <div id="seguro-list">
+              <div class="step seguro-item"><span class="check">✓</span>Confirma antes de enviar ao eSocial</div>
+              <div class="step seguro-item"><span class="check">✓</span>CPF e CNPJ ficam só no app</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <script>
+        (() => {
+          const { dur, zoom, checksAt } = window.__hyperframes.getVariables();
+          const tl = gsap.timeline({ paused: true });
+          const B = window.brand;
+          const items = document.querySelectorAll(".seguro-item");
+          B.fadeIn(tl, "#seguro-logo");
+          B.upIn(tl, "#seguro-head", 0.05);
+          String(checksAt).split(",").map(Number).forEach((at, i) => B.upIn(tl, items[i], at * dur));
+          B.camera(tl, "seguro", zoom, dur);
+          window.__timelines["seguro"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>
